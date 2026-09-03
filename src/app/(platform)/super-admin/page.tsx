@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertTriangle,
   AlertCircle,
@@ -7,8 +9,9 @@ import {
   GraduationCap,
   CreditCard,
   CheckCircle,
+  ChevronDown,
 } from "lucide-react";
-import { NotificationCenter } from "@/components/platform/notification-center";
+import { useSchoolContext } from "@/components/platform/school-context";
 
 const attentionItems = [
   {
@@ -35,21 +38,9 @@ const attentionItems = [
 ];
 
 const schoolsNeedingAttention = [
-  {
-    name: "Green Valley Academy",
-    issue: "Subscription expiring",
-    priority: "High",
-  },
-  {
-    name: "St Mary's School",
-    issue: "User limit approaching",
-    priority: "Medium",
-  },
-  {
-    name: "Hillcrest International",
-    issue: "Onboarding incomplete",
-    priority: "Low",
-  },
+  { name: "Green Valley Academy", issue: "Subscription expiring", priority: "High" },
+  { name: "St Mary's School", issue: "User limit approaching", priority: "Medium" },
+  { name: "Hillcrest International", issue: "Onboarding incomplete", priority: "Low" },
 ];
 
 const platformStats = [
@@ -66,24 +57,49 @@ const systemHealth = [
   { label: "Sync", status: "Operational" },
 ];
 
-const recentActivity = [
-  { action: "Settings updated", time: "2m ago" },
-  { action: "New registration", time: "14m ago" },
-  { action: "Import completed", time: "31m ago" },
-  { action: "School accessed", time: "1h ago" },
-];
-
 export default function SuperAdminPage() {
+  const { schools, currentSchool, setCurrentSchool, loading } = useSchoolContext();
+
   return (
     <div className="space-y-6">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Good morning, Admin
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Here&apos;s what needs your attention.
-        </p>
+      {/* Greeting + School Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Good morning, Admin
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Here&apos;s what needs your attention.
+          </p>
+        </div>
+
+        {/* School Context Switcher */}
+        {schools.length > 0 && (
+          <div className="relative">
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">
+              Viewing school
+            </label>
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
+              <School className="h-4 w-4 text-primary shrink-0" />
+              <select
+                value={currentSchool?.id ?? ""}
+                onChange={(e) => {
+                  const school = schools.find((s) => s.id === e.target.value);
+                  if (school) setCurrentSchool(school);
+                }}
+                disabled={loading}
+                className="bg-transparent text-sm font-medium text-foreground focus:outline-none appearance-none pr-6 cursor-pointer"
+              >
+                {schools.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="h-4 w-4 text-muted-foreground -ml-4 pointer-events-none" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Needs Attention */}
@@ -105,9 +121,6 @@ export default function SuperAdminPage() {
             </div>
           ))}
         </div>
-        <button className="mt-4 text-sm font-medium text-primary hover:underline cursor-pointer">
-          Review Attention Items
-        </button>
       </div>
 
       {/* Schools Needing Attention */}
@@ -119,26 +132,16 @@ export default function SuperAdminPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="pb-3 text-left font-medium text-muted-foreground">
-                  School
-                </th>
-                <th className="pb-3 text-left font-medium text-muted-foreground">
-                  Issue
-                </th>
-                <th className="pb-3 text-left font-medium text-muted-foreground">
-                  Priority
-                </th>
-                <th className="pb-3 text-left font-medium text-muted-foreground">
-                  Action
-                </th>
+                <th className="pb-3 text-left font-medium text-muted-foreground">School</th>
+                <th className="pb-3 text-left font-medium text-muted-foreground">Issue</th>
+                <th className="pb-3 text-left font-medium text-muted-foreground">Priority</th>
+                <th className="pb-3 text-left font-medium text-muted-foreground">Action</th>
               </tr>
             </thead>
             <tbody>
               {schoolsNeedingAttention.map((school) => (
                 <tr key={school.name} className="border-b border-border/50 last:border-0">
-                  <td className="py-3 font-medium text-foreground">
-                    {school.name}
-                  </td>
+                  <td className="py-3 font-medium text-foreground">{school.name}</td>
                   <td className="py-3 text-muted-foreground">{school.issue}</td>
                   <td className="py-3">
                     <span
@@ -178,9 +181,7 @@ export default function SuperAdminPage() {
             >
               <div className="flex items-center gap-2 text-muted-foreground mb-2">
                 <stat.icon className="h-4 w-4" />
-                <span className="text-xs font-medium uppercase tracking-wide">
-                  {stat.label}
-                </span>
+                <span className="text-xs font-medium uppercase tracking-wide">{stat.label}</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{stat.value}</p>
             </div>
@@ -188,31 +189,22 @@ export default function SuperAdminPage() {
         </div>
       </div>
 
-      {/* System Health & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="text-base font-semibold text-foreground mb-4">
-            System Health
-          </h2>
-          <div className="space-y-3">
-            {systemHealth.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between"
-              >
-                <span className="text-sm text-muted-foreground">
-                  {item.label}
-                </span>
-                <span className="flex items-center gap-1.5 text-sm text-green-600">
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  {item.status}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* System Health */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="text-base font-semibold text-foreground mb-4">
+          System Health
+        </h2>
+        <div className="space-y-3">
+          {systemHealth.map((item) => (
+            <div key={item.label} className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{item.label}</span>
+              <span className="flex items-center gap-1.5 text-sm text-green-600">
+                <CheckCircle className="h-3.5 w-3.5" />
+                {item.status}
+              </span>
+            </div>
+          ))}
         </div>
-
-        <NotificationCenter />
       </div>
     </div>
   );
