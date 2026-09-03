@@ -10,8 +10,8 @@ const footerLinks = {
     { label: "For Schools", href: "#roles" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
   ],
   Support: [
     { label: "Contact", href: "#" },
