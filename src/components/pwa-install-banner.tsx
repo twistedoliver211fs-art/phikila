@@ -16,6 +16,12 @@ export function PWAInstallBanner() {
       setShow(true);
     };
 
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      setDismissed(true);
+      return;
+    }
+
     const dismissedAt = localStorage.getItem("pwa-banner-dismissed");
     if (dismissedAt) {
       const hoursSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60);

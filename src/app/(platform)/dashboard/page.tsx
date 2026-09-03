@@ -5,9 +5,9 @@ const portalRoutes: Record<string, string> = {
   super_admin: "/super-admin",
   principal: "/principal",
   teacher: "/teacher",
-  finance: "/super-admin",
-  admissions_officer: "/super-admin",
-  secretary: "/super-admin",
+  finance: "/principal",
+  admissions_officer: "/principal",
+  secretary: "/principal",
   parent: "/parent",
 };
 
@@ -29,8 +29,12 @@ export default async function DashboardPage() {
     .eq("is_active", true)
     .limit(1);
 
-  const role = members?.[0]?.role ?? "teacher";
-  const route = portalRoutes[role] ?? "/teacher";
+  const role = members?.[0]?.role;
 
+  if (!role) {
+    redirect("/no-access");
+  }
+
+  const route = portalRoutes[role] ?? "/teacher";
   redirect(route);
 }

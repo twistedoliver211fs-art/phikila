@@ -5,17 +5,20 @@ import {
   Calendar,
   Mail,
   AlertCircle,
+  ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
 
-const children = [
+const childrenData = [
   {
+    id: "1",
     name: "Jane Wanjiku",
     grade: "Grade 8A",
     attendance: "96%",
     academicStatus: "Good",
   },
   {
+    id: "2",
     name: "Sam Wanjiku",
     grade: "Grade 5B",
     attendance: "92%",
@@ -29,7 +32,7 @@ const attentionItems = [
     title: "Fee balance available",
     description: "KES 12,500 remaining for Jane",
     action: "View Fees",
-    href: "/platform/parent",
+    href: "#fees",
   },
 ];
 
@@ -49,11 +52,11 @@ const recentUpdates = [
 ];
 
 const quickAccess = [
-  { label: "Attendance", href: "/platform/parent", icon: Calendar },
-  { label: "Fees", href: "/platform/parent", icon: DollarSign },
-  { label: "Academics", href: "/platform/parent", icon: BookOpen },
-  { label: "Timetable", href: "/platform/parent", icon: Calendar },
-  { label: "Messages", href: "/platform/parent", icon: Mail },
+  { label: "Attendance", href: "#attendance", icon: ClipboardCheck },
+  { label: "Fees", href: "#fees", icon: DollarSign },
+  { label: "Academics", href: "#academics", icon: BookOpen },
+  { label: "Timetable", href: "#timetable", icon: Calendar },
+  { label: "Messages", href: "#messages", icon: Mail },
 ];
 
 export default function ParentPage() {
@@ -68,7 +71,7 @@ export default function ParentPage() {
       </div>
 
       {/* Children */}
-      <div>
+      <section id="children">
         <div className="flex items-center gap-2 mb-4">
           <Baby className="h-5 w-5 text-primary" />
           <h2 className="text-base font-semibold text-foreground">
@@ -76,9 +79,9 @@ export default function ParentPage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {children.map((child) => (
+          {childrenData.map((child) => (
             <div
-              key={child.name}
+              key={child.id}
               className="rounded-xl border border-border bg-card p-5 hover:shadow-md transition-shadow cursor-pointer"
             >
               <div className="flex items-center gap-3">
@@ -116,10 +119,10 @@ export default function ParentPage() {
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Attention */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <section id="fees" className="rounded-xl border border-border bg-card p-6">
         <h2 className="text-base font-semibold text-foreground mb-4">
           Attention
         </h2>
@@ -145,10 +148,10 @@ export default function ParentPage() {
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Recent Updates */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <section id="messages" className="rounded-xl border border-border bg-card p-6">
         <h2 className="text-base font-semibold text-foreground mb-4">
           Recent Updates
         </h2>
@@ -173,10 +176,10 @@ export default function ParentPage() {
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Quick Access */}
-      <div>
+      <section>
         <h2 className="text-base font-semibold text-foreground mb-4">
           Quick Access
         </h2>
@@ -194,7 +197,7 @@ export default function ParentPage() {
             </Link>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

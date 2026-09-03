@@ -2,29 +2,36 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
+import { Suspense } from "react";
 
-export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
-  const supabase = createClient();
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
 
-  async function handleGoogleSignIn() {
-    setLoading(true);
+  const handleGoogleLogin = async () => {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-  }
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+    <section className="relative flex min-h-screen items-center justify-center px-4">
+      {/* Background gradient */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.04] blur-3xl" />
+      </div>
+
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
+        {/* Logo */}
+        <div className="mb-8 flex justify-center">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/logo.jpeg"
               alt="Phikila"
@@ -36,6 +43,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
+        {/* Card */}
         <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
@@ -44,10 +52,21 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Error state */}
+          {error && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-center">
+              <p className="text-sm font-medium text-red-800">
+                {error === "auth_failed"
+                  ? "Sign-in failed. Please try again."
+                  : "Something went wrong. Please try again."}
+              </p>
+            </div>
+          )}
+
+          {/* Google Sign-In */}
           <div className="mt-6">
             <Button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
+              onClick={handleGoogleLogin}
               variant="outline"
               className="w-full h-12 text-base"
             >
@@ -69,48 +88,56 @@ export default function LoginPage() {
                   fill="#EA4335"
                 />
               </svg>
-              {loading ? "Signing in..." : "Continue with Google"}
+              Continue with Google
             </Button>
           </div>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground leading-relaxed">
+          <p className="mt-4 text-center text-xs text-muted-foreground">
             Phikila uses Google to securely authenticate your account.
             <br />
             No Phikila password is required.
           </p>
-
-          <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Don&apos;t have a school?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-primary hover:underline"
-              >
-                Register your School
-              </Link>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Want to see Phikila first?{" "}
-              <Link
-                href="/"
-                className="font-medium text-primary hover:underline"
-              >
-                Get a Demo
-              </Link>
-            </p>
-          </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          <a href="#" className="hover:underline">
-            Terms
-          </a>{" "}
-          ·{" "}
-          <a href="#" className="hover:underline">
-            Privacy
-          </a>
-        </p>
+        {/* Alternate actions */}
+        <div className="mt-6 text-center space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Don&apos;t have a school?{" "}
+            <Link href="/register" className="font-medium text-primary hover:underline">
+              Register your School
+            </Link>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Want to see Phikila first?{" "}
+            <Link href="/" className="font-medium text-primary hover:underline">
+              Get a Demo
+            </Link>
+          </p>
+        </div>
+
+        {/* Footer links */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            <Link href="/terms" className="hover:underline">Terms</Link>
+            {" · "}
+            <Link href="/privacy" className="hover:underline">Privacy</Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

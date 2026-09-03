@@ -67,8 +67,9 @@ export function Header({ onMenuClick, roleLabel, userName }: HeaderProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600"
-              onClick={() => {
-                window.location.href = "/api/auth/signout";
+              onClick={async () => {
+                await fetch("/api/auth/signout", { method: "POST" });
+                window.location.href = "/login";
               }}
             >
               Sign out

@@ -105,8 +105,8 @@ export default function SuperAdminPage() {
             </div>
           ))}
         </div>
-        <button className="mt-4 text-sm font-medium text-primary hover:underline">
-          Review Attention Items →
+        <button className="mt-4 text-sm font-medium text-primary hover:underline cursor-pointer">
+          Review Attention Items
         </button>
       </div>
 
