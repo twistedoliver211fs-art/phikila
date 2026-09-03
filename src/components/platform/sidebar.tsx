@@ -72,6 +72,16 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "Communication", href: "/teacher", icon: MessageSquare },
     { label: "Profile", href: "/teacher", icon: Settings },
   ],
+  timetable_manager: [
+    { label: "Dashboard", href: "/teacher", icon: LayoutDashboard },
+    { label: "Timetable Builder", href: "/principal/timetable", icon: Calendar },
+    { label: "My Timetable", href: "/teacher/timetable", icon: Calendar },
+    { label: "My Students", href: "/teacher/students", icon: GraduationCap },
+    { label: "Attendance", href: "/teacher/attendance", icon: ClipboardCheck },
+    { label: "Academics", href: "/teacher", icon: BookOpen },
+    { label: "Communication", href: "/teacher", icon: MessageSquare },
+    { label: "Profile", href: "/teacher", icon: Settings },
+  ],
   parent: [
     { label: "Home", href: "/dashboard", icon: Home },
     { label: "Children", href: "/parent", icon: Baby },

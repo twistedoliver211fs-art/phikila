@@ -5,9 +5,10 @@ const portalRoutes: Record<string, string> = {
   super_admin: "/super-admin",
   principal: "/principal",
   teacher: "/teacher",
-  finance: "/principal",
-  admissions_officer: "/principal",
-  secretary: "/principal",
+  timetable_manager: "/teacher",
+  finance: "/finance",
+  admissions_officer: "/admissions-officer",
+  secretary: "/secretary",
   parent: "/parent",
 };
 

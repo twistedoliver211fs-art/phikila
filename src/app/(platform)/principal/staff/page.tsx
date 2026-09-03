@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const roles = [
   { value: "teacher", label: "Teacher" },
+  { value: "timetable_manager", label: "Timetable Manager" },
   { value: "principal", label: "Principal" },
   { value: "finance", label: "Finance" },
   { value: "admissions_officer", label: "Admissions Officer" },
@@ -15,6 +16,7 @@ const roles = [
 
 const roleColors: Record<string, string> = {
   teacher: "bg-blue-50 text-blue-700",
+  timetable_manager: "bg-indigo-50 text-indigo-700",
   secretary: "bg-purple-50 text-purple-700",
   finance: "bg-amber-50 text-amber-700",
   principal: "bg-green-50 text-green-700",

@@ -41,6 +41,9 @@ export async function updateSession(request: NextRequest) {
     "/principal",
     "/teacher",
     "/parent",
+    "/admissions-officer",
+    "/finance",
+    "/secretary",
     "/platform",
   ];
 

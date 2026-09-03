@@ -6,6 +6,7 @@ const roleLabels: Record<string, string> = {
   super_admin: "Super Admin",
   principal: "Principal",
   teacher: "Teacher",
+  timetable_manager: "Timetable Manager",
   finance: "Finance",
   admissions_officer: "Admissions Officer",
   secretary: "Secretary",
