@@ -64,10 +64,10 @@ const navConfig: Record<
     { label: "Settings", href: "/principal", icon: Settings },
   ],
   teacher: [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { label: "My Timetable", href: "/teacher", icon: Calendar },
-    { label: "My Students", href: "/teacher", icon: GraduationCap },
-    { label: "Attendance", href: "/teacher", icon: ClipboardCheck },
+    { label: "Dashboard", href: "/teacher", icon: LayoutDashboard },
+    { label: "My Timetable", href: "/teacher/timetable", icon: Calendar },
+    { label: "My Students", href: "/teacher/students", icon: GraduationCap },
+    { label: "Attendance", href: "/teacher/attendance", icon: ClipboardCheck },
     { label: "Academics", href: "/teacher", icon: BookOpen },
     { label: "Communication", href: "/teacher", icon: MessageSquare },
     { label: "Profile", href: "/teacher", icon: Settings },
@@ -125,7 +125,9 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto p-3">
           <ul className="space-y-0.5">
             {items.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <li key={item.label}>
                   <Link
