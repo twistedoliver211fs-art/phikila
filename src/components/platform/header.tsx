@@ -14,9 +14,10 @@ import {
 interface HeaderProps {
   onMenuClick: () => void;
   roleLabel: string;
+  userName: string;
 }
 
-export function Header({ onMenuClick, roleLabel }: HeaderProps) {
+export function Header({ onMenuClick, roleLabel, userName }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-6">
       <Button
@@ -57,14 +58,21 @@ export function Header({ onMenuClick, roleLabel }: HeaderProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">Admin User</p>
+              <p className="text-sm font-medium">{userName}</p>
               <p className="text-xs text-muted-foreground">{roleLabel}</p>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">Sign out</DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => {
+                window.location.href = "/api/auth/signout";
+              }}
+            >
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

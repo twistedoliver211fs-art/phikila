@@ -1,7 +1,36 @@
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-export default function DashboardPage() {
-  // In production, check auth and redirect to correct role portal
-  // For now, redirect to super admin
-  redirect("/platform/super-admin");
+const portalRoutes: Record<string, string> = {
+  super_admin: "/super-admin",
+  principal: "/principal",
+  teacher: "/teacher",
+  finance: "/super-admin",
+  admissions_officer: "/super-admin",
+  secretary: "/super-admin",
+  parent: "/parent",
+};
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: members } = await supabase
+    .from("school_members")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+    .limit(1);
+
+  const role = members?.[0]?.role ?? "teacher";
+  const route = portalRoutes[role] ?? "/teacher";
+
+  redirect(route);
 }
