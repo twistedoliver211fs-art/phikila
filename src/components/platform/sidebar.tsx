@@ -16,7 +16,6 @@ import {
   Settings,
   GraduationCap,
   BookOpen,
-  ClipboardList,
   DollarSign,
   Megaphone,
   ClipboardCheck,
@@ -26,19 +25,18 @@ import {
   Calendar,
   Mail,
   X,
+  ClipboardList,
+  BookMarked,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
-  role: "super_admin" | "principal" | "teacher" | "parent";
+  role: string;
   open: boolean;
   onClose: () => void;
 }
 
-const navConfig: Record<
-  SidebarProps["role"],
-  { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[]
-> = {
+const navConfig: Record<string, { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[]> = {
   super_admin: [
     { label: "Dashboard", href: "/super-admin", icon: LayoutDashboard },
     { label: "Schools", href: "/super-admin", icon: School },
@@ -57,10 +55,11 @@ const navConfig: Record<
     { label: "Attendance", href: "/principal/attendance", icon: ClipboardCheck },
     { label: "Fees & Finance", href: "/principal/fees", icon: DollarSign },
     { label: "Academics", href: "/principal/academics", icon: BookOpen },
+    { label: "Exams & Results", href: "/principal/exams", icon: BarChart3 },
+    { label: "Timetable", href: "/principal/timetable", icon: Calendar },
     { label: "Admissions", href: "/principal/admissions", icon: UserCheck },
     { label: "Communication", href: "/principal", icon: MessageSquare },
-    { label: "Reports", href: "/principal", icon: BarChart3 },
-    { label: "Office", href: "/principal", icon: Calendar },
+    { label: "Reports", href: "/principal", icon: FileText },
     { label: "Settings", href: "/principal", icon: Settings },
   ],
   teacher: [
@@ -68,6 +67,7 @@ const navConfig: Record<
     { label: "My Timetable", href: "/teacher/timetable", icon: Calendar },
     { label: "My Students", href: "/teacher/students", icon: GraduationCap },
     { label: "Attendance", href: "/teacher/attendance", icon: ClipboardCheck },
+    { label: "Exams & Results", href: "/teacher", icon: BarChart3 },
     { label: "Academics", href: "/teacher", icon: BookOpen },
     { label: "Communication", href: "/teacher", icon: MessageSquare },
     { label: "Profile", href: "/teacher", icon: Settings },
@@ -81,15 +81,37 @@ const navConfig: Record<
     { label: "Timetable", href: "/parent", icon: Calendar },
     { label: "Communication", href: "/parent", icon: Mail },
   ],
+  admissions_officer: [
+    { label: "Dashboard", href: "/admissions-officer", icon: LayoutDashboard },
+    { label: "Applications", href: "/admissions-officer", icon: UserCheck },
+    { label: "New Admission", href: "/admissions-officer", icon: GraduationCap },
+    { label: "Communication", href: "/admissions-officer", icon: MessageSquare },
+    { label: "Reports", href: "/admissions-officer", icon: BarChart3 },
+  ],
+  finance: [
+    { label: "Dashboard", href: "/finance", icon: LayoutDashboard },
+    { label: "Payments", href: "/finance", icon: DollarSign },
+    { label: "Fee Structures", href: "/finance", icon: CreditCard },
+    { label: "Outstanding", href: "/finance", icon: ClipboardList },
+    { label: "Reports", href: "/finance", icon: BarChart3 },
+    { label: "Communication", href: "/finance", icon: MessageSquare },
+  ],
+  secretary: [
+    { label: "Dashboard", href: "/secretary", icon: LayoutDashboard },
+    { label: "Announcements", href: "/secretary", icon: Megaphone },
+    { label: "Messages", href: "/secretary", icon: Mail },
+    { label: "Staff Directory", href: "/secretary", icon: Users },
+    { label: "Calendar", href: "/secretary", icon: Calendar },
+    { label: "Documents", href: "/secretary", icon: FileText },
+  ],
 };
 
 export function Sidebar({ role, open, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const items = navConfig[role];
+  const items = navConfig[role] ?? navConfig.teacher;
 
   return (
     <>
-      {/* Mobile overlay */}
       {open && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"

@@ -22,7 +22,7 @@ export function PlatformShell({
   return (
     <div className="flex h-screen overflow-hidden bg-muted/30">
       <Sidebar
-        role={role as "super_admin" | "principal" | "teacher" | "parent"}
+        role={role}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
