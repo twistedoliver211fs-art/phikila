@@ -171,7 +171,7 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
             {items.map((item) => {
               const isActive = item.href === "/dashboard"
                 ? pathname === "/dashboard"
-                : pathname === item.href || pathname.startsWith(item.href + "/");
+                : pathname === item.href;
               return (
                 <li key={item.label}>
                   <Link
