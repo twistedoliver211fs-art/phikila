@@ -173,12 +173,12 @@ export default function GradingSystemPage() {
 
     const { data: examResults } = await supabase
       .from("exam_results")
-      .select("id, score")
+      .select("id, percentage")
       .in("exam_id", examIds);
 
     if (examResults && examResults.length > 0) {
-      const recalcs = examResults.map((r: { id: string; score: number }) => {
-        const matched = grades.find((g) => r.score >= g.min_score && r.score <= g.max_score);
+      const recalcs = examResults.map((r: { id: string; percentage: number }) => {
+        const matched = grades.find((g) => r.percentage >= g.min_score && r.percentage <= g.max_score);
         return { id: r.id, grade: matched?.grade_label ?? "—" };
       });
       await supabase.from("exam_results").upsert(recalcs, { onConflict: "exam_id,student_id,subject_id" });
@@ -195,7 +195,7 @@ export default function GradingSystemPage() {
         user_id: m.user_id,
         title: "Grading System Updated",
         message: `The grading system for ${term.name} has been updated. All existing grades have been recalculated.`,
-        read: false,
+        is_read: false,
       }));
       await supabase.from("notifications").insert(notifications);
     }

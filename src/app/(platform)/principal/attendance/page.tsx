@@ -26,9 +26,16 @@ export default function PrincipalAttendancePage() {
     async function fetchAttendance() {
       setLoading(true);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       const { data: schoolMember } = await supabase
         .from("school_members")
         .select("school_id")
+        .eq("user_id", user.id)
         .eq("is_active", true)
         .limit(1)
         .single();

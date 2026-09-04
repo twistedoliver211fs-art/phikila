@@ -9,11 +9,13 @@ export default async function PrincipalFeesPage() {
 
   const { data: accounts } = await supabase
     .from("student_accounts")
-    .select("student_id, amount_due, amount_paid, balance");
+    .select("student_id, amount_due, amount_paid, balance")
+    .eq("school_id", schoolId);
 
   const { data: payments } = await supabase
     .from("payments")
     .select("id, amount, payment_date, reference_number, student_accounts(student_id, students(first_name, last_name, classes(name, grades(name))))")
+    .eq("school_id", schoolId)
     .order("payment_date", { ascending: false })
     .limit(10);
 

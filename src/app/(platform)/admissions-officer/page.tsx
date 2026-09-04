@@ -107,19 +107,19 @@ export default function AdmissionsOfficerPage() {
             .eq("status", "active"),
           supabase
             .from("staff_registrations")
-            .select("id, first_name, last_name, registration_number, status, created_at")
+            .select("id, first_name, last_name, employee_number, status, created_at")
             .eq("school_id", schoolId)
             .order("created_at", { ascending: false })
             .limit(10),
           supabase
             .from("student_registrations")
-            .select("id, first_name, last_name, registration_number, status, created_at")
+            .select("id, first_name, last_name, admission_number, status, created_at")
             .eq("school_id", schoolId)
             .order("created_at", { ascending: false })
             .limit(10),
           supabase
             .from("non_teaching_staff")
-            .select("id, first_name, last_name, registration_number, status, created_at")
+            .select("id, first_name, last_name, staff_number, status, created_at")
             .eq("school_id", schoolId)
             .order("created_at", { ascending: false })
             .limit(10),
@@ -135,7 +135,7 @@ export default function AdmissionsOfficerPage() {
         ...(recentStaff.data ?? []).map((r) => ({
           id: r.id,
           name: `${r.first_name} ${r.last_name}`,
-          registration_number: r.registration_number,
+          registration_number: r.employee_number,
           type: "teacher" as const,
           status: r.status,
           created_at: r.created_at,
@@ -143,7 +143,7 @@ export default function AdmissionsOfficerPage() {
         ...(recentStudents.data ?? []).map((r) => ({
           id: r.id,
           name: `${r.first_name} ${r.last_name}`,
-          registration_number: r.registration_number,
+          registration_number: r.admission_number,
           type: "student" as const,
           status: r.status,
           created_at: r.created_at,
@@ -151,7 +151,7 @@ export default function AdmissionsOfficerPage() {
         ...(recentNonTeaching.data ?? []).map((r) => ({
           id: r.id,
           name: `${r.first_name} ${r.last_name}`,
-          registration_number: r.registration_number,
+          registration_number: r.staff_number,
           type: "non_teaching" as const,
           status: r.status,
           created_at: r.created_at,

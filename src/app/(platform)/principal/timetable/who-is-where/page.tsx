@@ -15,7 +15,7 @@ interface Period {
 
 interface TimetableSlot {
   id: string;
-  day_of_week: string;
+  day_of_week: number;
   period_id: string;
   class_id: string;
   subject_id: string;
@@ -73,14 +73,15 @@ export default function WhosWherePage() {
     return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
   }, []);
 
-  const getDayName = useCallback(() => {
-    const now = new Date();
-    return DAY_NAMES[now.getDay()];
+  const getDayNumber = useCallback(() => {
+    const day = new Date().getDay();
+    return day === 0 ? 7 : day;
   }, []);
 
   const isBreak = useCallback(
     (time: string) => {
-      const dayName = getDayName();
+      const dayNum = getDayNumber();
+      const dayName = DAY_NAMES[dayNum === 7 ? 0 : dayNum];
       return breaks.some(
         (b) =>
           b.start_time <= time &&
@@ -88,7 +89,7 @@ export default function WhosWherePage() {
           b.days.includes(dayName)
       );
     },
-    [breaks, getDayName]
+    [breaks, getDayNumber]
   );
 
   const loadTimetable = useCallback(async () => {
@@ -121,9 +122,9 @@ export default function WhosWherePage() {
 
   const computeStatus = useCallback(() => {
     const time = getTimeString();
-    const day = getDayName();
+    const day = getDayNumber();
     setCurrentTime(time);
-    setCurrentDay(day);
+    setCurrentDay(DAY_NAMES[day === 7 ? 0 : day]);
 
     const activePeriod = periods.find(
       (p) => p.start_time <= time && p.end_time >= time
@@ -211,7 +212,7 @@ export default function WhosWherePage() {
         a.className.localeCompare(b.className)
       )
     );
-  }, [slots, periods, getTimeString, getDayName]);
+  }, [slots, periods, getTimeString, getDayNumber]);
 
   useEffect(() => {
     loadTimetable().then(() => setLoading(false));

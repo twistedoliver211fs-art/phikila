@@ -16,6 +16,8 @@ export default function TeacherAttendancePage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [className, setClassName] = useState("");
+  const [schoolId, setSchoolId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function TeacherAttendancePage() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
+      setUserId(user.id);
 
       const { data: schoolMember } = await supabase
         .from("school_members")
@@ -36,6 +39,7 @@ export default function TeacherAttendancePage() {
         .single();
 
       if (!schoolMember) { setLoading(false); return; }
+      setSchoolId(schoolMember.school_id);
 
       const { data: staffRecord } = await supabase
         .from("staff")
@@ -98,6 +102,8 @@ export default function TeacherAttendancePage() {
       student_id: s.id,
       date: selectedDate,
       status: s.status,
+      school_id: schoolId,
+      recorded_by: userId,
     }));
 
     await supabase.from("attendance_records").upsert(records, {

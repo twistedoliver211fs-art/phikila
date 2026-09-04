@@ -62,10 +62,10 @@ export default function RegisterStudentPage() {
 
       const grouped: Record<string, ClassOption[]> = {};
       for (const c of classes ?? []) {
-        const gradesArr = c.grades as unknown as { name: string }[] | null;
-        const gradeName = gradesArr?.[0]?.name ?? "Other";
+        const gradeObj = c.grades as unknown as { name: string } | null;
+        const gradeName = gradeObj?.name ?? "Other";
         if (!grouped[gradeName]) grouped[gradeName] = [];
-        grouped[gradeName].push({ id: c.id, name: c.name, grades: gradesArr?.[0] ?? null });
+        grouped[gradeName].push({ id: c.id, name: c.name, grades: gradeObj });
       }
 
       const groups: GradeGroup[] = Object.entries(grouped).map(([gradeName, cls]) => ({
