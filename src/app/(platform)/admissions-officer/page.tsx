@@ -1,129 +1,348 @@
-import { Clock, CheckCircle, XCircle, Eye, UserPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentSchoolId } from "@/lib/supabase/helpers";
+"use client";
 
-const statusConfig: Record<string, { icon: typeof Clock; color: string; label: string }> = {
-  pending: { icon: Clock, color: "bg-amber-50 text-amber-700", label: "Pending" },
-  under_review: { icon: Clock, color: "bg-blue-50 text-blue-700", label: "Under Review" },
-  accepted: { icon: CheckCircle, color: "bg-green-50 text-green-700", label: "Accepted" },
-  rejected: { icon: XCircle, color: "bg-red-50 text-red-700", label: "Rejected" },
-  enrolled: { icon: CheckCircle, color: "bg-green-50 text-green-700", label: "Enrolled" },
+import { useEffect, useState } from "react";
+import {
+  Users,
+  GraduationCap,
+  Briefcase,
+  UserPlus,
+  Clock,
+  RefreshCw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
+import { seedCbcSubjects } from "@/lib/cbc-subjects";
+
+interface School {
+  id: string;
+  education_level: string;
+  curriculum_subjects_loaded: boolean;
+}
+
+interface RegistrationRow {
+  id: string;
+  name: string;
+  registration_number: string;
+  type: "teacher" | "student" | "non_teaching";
+  status: string;
+  created_at: string;
+}
+
+const typeLabels: Record<string, { label: string; color: string }> = {
+  teacher: { label: "Teacher", color: "bg-indigo-50 text-indigo-700" },
+  student: { label: "Student", color: "bg-blue-50 text-blue-700" },
+  non_teaching: {
+    label: "Non-Teaching",
+    color: "bg-purple-50 text-purple-700",
+  },
 };
 
-export default async function AdmissionsOfficerPage() {
-  const schoolId = await getCurrentSchoolId();
-  const supabase = await createClient();
+export default function AdmissionsOfficerPage() {
+  const supabase = createClient();
 
-  const { data: applications } = await supabase
-    .from("admissions")
-    .select("id, applicant_name, applicant_email, applicant_phone, status, created_at, notes, classes(name, grades(name))")
-    .eq("school_id", schoolId)
-    .order("created_at", { ascending: false });
+  const [school, setSchool] = useState<School | null>(null);
+  const [teacherCount, setTeacherCount] = useState(0);
+  const [studentCount, setStudentCount] = useState(0);
+  const [nonTeachingCount, setNonTeachingCount] = useState(0);
+  const [recentRegistrations, setRecentRegistrations] = useState<
+    RegistrationRow[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
 
-  const pending = applications?.filter((a) => a.status === "pending").length ?? 0;
-  const underReview = applications?.filter((a) => a.status === "under_review").length ?? 0;
-  const accepted = applications?.filter((a) => a.status === "accepted" || a.status === "enrolled").length ?? 0;
-  const rejected = applications?.filter((a) => a.status === "rejected").length ?? 0;
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      const { data: sm } = await supabase
+        .from("school_members")
+        .select("school_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .limit(1)
+        .single();
+
+      if (!sm || cancelled) return;
+
+      const schoolId = sm.school_id;
+
+      const { data: schoolData } = await supabase
+        .from("schools")
+        .select("id, education_level, curriculum_subjects_loaded")
+        .eq("id", schoolId)
+        .single();
+
+      if (!cancelled && schoolData) {
+        setSchool(schoolData as School);
+      }
+
+      const [teachers, students, nonTeaching, recentStaff, recentStudents, recentNonTeaching] =
+        await Promise.all([
+          supabase
+            .from("school_members")
+            .select("id", { count: "exact", head: true })
+            .eq("school_id", schoolId)
+            .eq("role", "teacher")
+            .eq("is_active", true),
+          supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .eq("school_id", schoolId)
+            .eq("is_active", true),
+          supabase
+            .from("non_teaching_staff")
+            .select("id", { count: "exact", head: true })
+            .eq("school_id", schoolId)
+            .eq("status", "active"),
+          supabase
+            .from("staff_registrations")
+            .select("id, first_name, last_name, registration_number, status, created_at")
+            .eq("school_id", schoolId)
+            .order("created_at", { ascending: false })
+            .limit(10),
+          supabase
+            .from("student_registrations")
+            .select("id, first_name, last_name, registration_number, status, created_at")
+            .eq("school_id", schoolId)
+            .order("created_at", { ascending: false })
+            .limit(10),
+          supabase
+            .from("non_teaching_staff")
+            .select("id, first_name, last_name, registration_number, status, created_at")
+            .eq("school_id", schoolId)
+            .order("created_at", { ascending: false })
+            .limit(10),
+        ]);
+
+      if (cancelled) return;
+
+      setTeacherCount(teachers.count ?? 0);
+      setStudentCount(students.count ?? 0);
+      setNonTeachingCount(nonTeaching.count ?? 0);
+
+      const allRecent: RegistrationRow[] = [
+        ...(recentStaff.data ?? []).map((r) => ({
+          id: r.id,
+          name: `${r.first_name} ${r.last_name}`,
+          registration_number: r.registration_number,
+          type: "teacher" as const,
+          status: r.status,
+          created_at: r.created_at,
+        })),
+        ...(recentStudents.data ?? []).map((r) => ({
+          id: r.id,
+          name: `${r.first_name} ${r.last_name}`,
+          registration_number: r.registration_number,
+          type: "student" as const,
+          status: r.status,
+          created_at: r.created_at,
+        })),
+        ...(recentNonTeaching.data ?? []).map((r) => ({
+          id: r.id,
+          name: `${r.first_name} ${r.last_name}`,
+          registration_number: r.registration_number,
+          type: "non_teaching" as const,
+          status: r.status,
+          created_at: r.created_at,
+        })),
+      ]
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        .slice(0, 10);
+
+      setRecentRegistrations(allRecent);
+      setLoading(false);
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (!school || school.curriculum_subjects_loaded || seeding) return;
+
+    setSeeding(true);
+    seedCbcSubjects(school.id, school.education_level).then(() => {
+      setSchool((prev) =>
+        prev ? { ...prev, curriculum_subjects_loaded: true } : prev
+      );
+      setSeeding(false);
+    });
+  }, [school, seeding]);
+
+  const total = teacherCount + studentCount + nonTeachingCount;
+
+  const stats = [
+    {
+      label: "Teachers",
+      count: teacherCount,
+      icon: Users,
+      accent: "text-indigo-600 bg-indigo-50",
+    },
+    {
+      label: "Students",
+      count: studentCount,
+      icon: GraduationCap,
+      accent: "text-blue-600 bg-blue-50",
+    },
+    {
+      label: "Non-Teaching",
+      count: nonTeachingCount,
+      icon: Briefcase,
+      accent: "text-purple-600 bg-purple-50",
+    },
+    {
+      label: "Total",
+      count: total,
+      icon: Users,
+      accent: "text-foreground bg-muted",
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Admissions Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Review and process student applications</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Admissions Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            School population overview and quick registration
+          </p>
+        </div>
+        {seeding && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <RefreshCw className="h-3 w-3 animate-spin" />
+            Loading CBC subjects…
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-xs font-medium text-amber-600">Pending</p>
-          <p className="text-2xl font-bold text-amber-700 mt-1">{pending}</p>
-        </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <p className="text-xs font-medium text-blue-600">Under Review</p>
-          <p className="text-2xl font-bold text-blue-700 mt-1">{underReview}</p>
-        </div>
-        <div className="rounded-xl border border-green-200 bg-green-50 p-4">
-          <p className="text-xs font-medium text-green-600">Accepted</p>
-          <p className="text-2xl font-bold text-green-700 mt-1">{accepted}</p>
-        </div>
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-          <p className="text-xs font-medium text-red-600">Rejected</p>
-          <p className="text-2xl font-bold text-red-700 mt-1">{rejected}</p>
-        </div>
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardContent className="flex items-center gap-4">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.accent}`}
+              >
+                <stat.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {stat.label}
+                </p>
+                <p className="text-2xl font-bold text-foreground">
+                  {loading ? "—" : stat.count}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/30">
-          <h2 className="text-sm font-semibold text-foreground">All Applications</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="p-4 text-left font-medium text-muted-foreground">Applicant</th>
-                <th className="p-4 text-left font-medium text-muted-foreground">Requested Class</th>
-                <th className="p-4 text-left font-medium text-muted-foreground">Phone</th>
-                <th className="p-4 text-left font-medium text-muted-foreground">Date</th>
-                <th className="p-4 text-left font-medium text-muted-foreground">Status</th>
-                <th className="p-4 text-left font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications && applications.length > 0 ? (
-                applications.map((app) => {
-                  const config = statusConfig[app.status] ?? statusConfig.pending;
-                  const Icon = config.icon;
-                  return (
-                    <tr key={app.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                            <span className="text-xs font-bold text-primary">
-                              {app.applicant_name.split(" ").map((n: string) => n[0]).join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-foreground">{app.applicant_name}</p>
-                            <p className="text-xs text-muted-foreground">{app.applicant_email ?? "No email"}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-muted-foreground">
-                        {(app.classes as any)?.grades?.name ?? ""} {(app.classes as any)?.name ?? ""}
-                      </td>
-                      <td className="p-4 text-muted-foreground">{app.applicant_phone ?? "—"}</td>
-                      <td className="p-4 text-muted-foreground">
-                        {new Date(app.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </td>
-                      <td className="p-4">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${config.color}`}>
-                          <Icon className="h-3 w-3" />
-                          {config.label}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm"><Eye className="h-4 w-4" /></Button>
-                          {app.status === "pending" && (
-                            <>
-                              <Button variant="ghost" size="sm" className="text-green-600"><CheckCircle className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="sm" className="text-red-600"><XCircle className="h-4 w-4" /></Button>
-                            </>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Registrations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+              Loading…
+            </div>
+          ) : recentRegistrations.length === 0 ? (
+            <p className="py-8 text-center text-muted-foreground text-sm">
+              No registrations yet.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="p-3 text-left font-medium text-muted-foreground">
+                      Name
+                    </th>
+                    <th className="p-3 text-left font-medium text-muted-foreground">
+                      Number
+                    </th>
+                    <th className="p-3 text-left font-medium text-muted-foreground">
+                      Type
+                    </th>
+                    <th className="p-3 text-left font-medium text-muted-foreground">
+                      Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentRegistrations.map((reg) => {
+                    const typeInfo =
+                      typeLabels[reg.type] ?? typeLabels.teacher;
+                    return (
+                      <tr
+                        key={reg.id}
+                        className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="p-3 font-medium text-foreground">
+                          {reg.name}
+                        </td>
+                        <td className="p-3 text-muted-foreground font-mono text-xs">
+                          {reg.registration_number}
+                        </td>
+                        <td className="p-3">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${typeInfo.color}`}
+                          >
+                            {typeInfo.label}
+                          </span>
+                        </td>
+                        <td className="p-3 text-muted-foreground">
+                          {new Date(reg.created_at).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric" }
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                    No applications yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div>
+        <h2 className="text-base font-semibold text-foreground mb-3">
+          Quick Actions
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          <Button>
+            <UserPlus className="h-4 w-4" />
+            Register Teacher
+          </Button>
+          <Button variant="outline">
+            <GraduationCap className="h-4 w-4" />
+            Register Student
+          </Button>
+          <Button variant="outline">
+            <Briefcase className="h-4 w-4" />
+            Register Non-Teaching Staff
+          </Button>
         </div>
       </div>
     </div>

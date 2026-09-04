@@ -102,10 +102,11 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
   ],
   admissions_officer: [
     { label: "Dashboard", href: "/admissions-officer", icon: LayoutDashboard },
-    { label: "Applications", href: "/admissions-officer", icon: UserCheck },
-    { label: "New Admission", href: "/admissions-officer", icon: GraduationCap },
-    { label: "Communication", href: "/admissions-officer", icon: MessageSquare },
+    { label: "Staff Registration", href: "/admissions-officer/staff", icon: Users },
+    { label: "Student Registration", href: "/admissions-officer/students", icon: GraduationCap },
+    { label: "Non-Teaching Staff", href: "/admissions-officer/non-teaching", icon: UserCheck },
     { label: "Reports", href: "/admissions-officer", icon: BarChart3 },
+    { label: "Communication", href: "/admissions-officer", icon: MessageSquare },
   ],
   finance: [
     { label: "Dashboard", href: "/finance", icon: LayoutDashboard },
