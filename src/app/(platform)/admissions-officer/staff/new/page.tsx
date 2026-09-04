@@ -142,25 +142,11 @@ export default function RegisterStaffPage() {
         employee_number: employeeNumber,
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
-        email: form.email.trim() || null,
-        phone: form.phone.trim(),
-        tsc_number: form.tsc_number.trim() || null,
-        staff_type: "teaching",
+        role: "teacher",
+        is_active: true,
       });
 
       if (staffError) throw staffError;
-
-      // Insert school membership
-      const { error: memberError } = await supabase
-        .from("school_members")
-        .insert({
-          school_id: schoolId,
-          user_id: null,
-          role: "teacher",
-          is_active: true,
-        });
-
-      if (memberError) throw memberError;
 
       router.push("/admissions-officer/staff");
     } catch (err: unknown) {

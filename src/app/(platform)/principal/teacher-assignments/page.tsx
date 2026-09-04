@@ -19,6 +19,7 @@ interface StaffMember {
   id: string;
   first_name: string;
   last_name: string;
+  user_id: string;
 }
 
 interface Subject {
@@ -65,7 +66,7 @@ export default function TeacherAssignmentsPage() {
   const loadData = async (sid: string) => {
     const supabase = createClient();
 
-    const [assignmentsRes, staffRes, subjectsRes, classesRes] = await Promise.all([
+    const [assignmentsRes, teacherMembersRes, subjectsRes, classesRes] = await Promise.all([
       supabase
         .from("teacher_subject_assignments")
         .select("id, staff_id, subject_id, class_id, staff(first_name, last_name), subjects(name), classes(name, grades(name))")
@@ -73,7 +74,7 @@ export default function TeacherAssignmentsPage() {
         .order("created_at", { ascending: false }),
       supabase
         .from("school_members")
-        .select("user_id, staff(id, first_name, last_name)")
+        .select("user_id")
         .eq("school_id", sid)
         .eq("role", "teacher")
         .eq("is_active", true),
@@ -83,13 +84,16 @@ export default function TeacherAssignmentsPage() {
 
     setAssignments((assignmentsRes.data as unknown as Assignment[]) ?? []);
 
-    const teacherList: StaffMember[] = [];
-    for (const m of staffRes.data ?? []) {
-      if (m.staff) {
-        teacherList.push(m.staff as unknown as StaffMember);
-      }
-    }
-    setStaff(teacherList);
+    const userIds = (teacherMembersRes.data ?? []).map((m: { user_id: string }) => m.user_id);
+    const { data: staffList } = userIds.length > 0
+      ? await supabase
+          .from("staff")
+          .select("id, first_name, last_name, user_id")
+          .eq("school_id", sid)
+          .in("user_id", userIds)
+      : { data: [] };
+
+    setStaff((staffList as unknown as StaffMember[]) ?? []);
     setSubjects((subjectsRes.data as unknown as Subject[]) ?? []);
     setClasses((classesRes.data as unknown as Class[]) ?? []);
     setLoading(false);

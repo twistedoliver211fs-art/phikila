@@ -18,7 +18,7 @@ interface Grade {
 interface Term {
   id: string;
   name: string;
-  is_active: boolean;
+  is_current: boolean;
 }
 
 interface Period {
@@ -39,7 +39,8 @@ interface SubjectFrequency {
 
 interface TeacherAssignment {
   subject_id: string;
-  grade_id: string;
+  class_id: string;
+  classes: { grade_id: string } | null;
 }
 
 export default function SubjectFrequenciesPage() {
@@ -75,23 +76,23 @@ export default function SubjectFrequenciesPage() {
             await Promise.all([
               supabase.from("subjects").select("id, name").eq("school_id", sm.school_id),
               supabase.from("grades").select("id, name").eq("school_id", sm.school_id),
-              supabase.from("terms").select("id, name, is_active").eq("school_id", sm.school_id),
+              supabase.from("terms").select("id, name, is_current, academic_years!inner(school_id)").eq("academic_years.school_id", sm.school_id),
               supabase.from("periods").select("id, position").eq("school_id", sm.school_id),
               supabase.from("breaks").select("id, days").eq("school_id", sm.school_id),
               supabase
                 .from("teacher_subject_assignments")
-                .select("subject_id, grade_id")
+                .select("subject_id, class_id, classes!inner(grade_id)")
                 .eq("school_id", sm.school_id),
             ]);
 
           setSubjects(subjectsRes.data ?? []);
           setGrades(gradesRes.data ?? []);
-          setTeacherAssignments(teacherAssignRes.data ?? []);
+          setTeacherAssignments((teacherAssignRes.data as unknown as TeacherAssignment[]) ?? []);
 
           const terms = termsRes.data ?? [];
-          const active = terms.find((t) => t.is_active);
+          const active = terms.find((t) => t.is_current);
           const previous = terms
-            .filter((t) => !t.is_active)
+            .filter((t) => !t.is_current)
             .sort((a, b) => b.name.localeCompare(a.name))[0];
 
           setActiveTerm(active ?? null);
@@ -157,7 +158,7 @@ export default function SubjectFrequenciesPage() {
     if (!freq || freq.periods_per_week === 0) return "missing";
 
     const hasTeacher = teacherAssignments.some(
-      (ta) => ta.subject_id === subjectId && ta.grade_id === selectedGradeId
+      (ta) => ta.subject_id === subjectId && ta.classes?.grade_id === selectedGradeId
     );
     return hasTeacher ? "assigned" : "warning";
   };

@@ -17,7 +17,7 @@ interface GradeLevel {
 interface Term {
   id: string;
   name: string;
-  is_active: boolean;
+  is_current: boolean;
 }
 
 const DEFAULT_GRADES: Omit<GradeLevel, "id">[] = [
@@ -47,9 +47,9 @@ export default function GradingSystemPage() {
 
         const { data: termData } = await supabase
           .from("terms")
-          .select("id, name, school_id, is_active")
-          .eq("school_id", sm.school_id)
-          .eq("is_active", true)
+          .select("id, name, is_current, academic_years!inner(school_id)")
+          .eq("academic_years.school_id", sm.school_id)
+          .eq("is_current", true)
           .limit(1)
           .single();
 

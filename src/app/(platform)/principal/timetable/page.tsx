@@ -52,7 +52,7 @@ interface Class {
   id: string;
   name: string;
   school_id: string;
-  grades: { name: string }[];
+  grades: { id: string; name: string }[];
 }
 
 interface Subject {
@@ -80,7 +80,7 @@ interface Term {
   id: string;
   name: string;
   school_id: string;
-  is_active: boolean;
+  is_current: boolean;
 }
 
 interface Break {
@@ -192,8 +192,8 @@ export default function PrincipalTimetablePage() {
             colorsRes,
             slotsRes,
           ] = await Promise.all([
-            supabase.from("terms").select("*").eq("school_id", sm.school_id).order("name"),
-            supabase.from("classes").select("id, name, school_id, grades(name)").eq("school_id", sm.school_id),
+            supabase.from("terms").select("*, academic_years!inner(school_id)").eq("academic_years.school_id", sm.school_id).order("name"),
+            supabase.from("classes").select("id, name, school_id, grades(id, name)").eq("school_id", sm.school_id),
             supabase.from("periods").select("*").eq("school_id", sm.school_id).order("position"),
             supabase.from("subjects").select("*").eq("school_id", sm.school_id),
             supabase.from("staff").select("id, first_name, last_name, school_id").eq("school_id", sm.school_id).eq("is_active", true),
@@ -217,7 +217,7 @@ export default function PrincipalTimetablePage() {
           setSubjectColors(colorsRes.data ?? []);
           setAllSlots(slotsRes.data ?? []);
 
-          const activeTerm = (termsRes.data ?? []).find((t) => t.is_active);
+          const activeTerm = (termsRes.data ?? []).find((t) => t.is_current);
           if (activeTerm) {
             setSelectedTermId(activeTerm.id);
           } else if (termsRes.data?.length) {
@@ -260,7 +260,7 @@ export default function PrincipalTimetablePage() {
     [terms, selectedTermId]
   );
 
-  const gradeId = selectedClass?.grades?.[0]?.name;
+  const gradeId = selectedClass?.grades?.[0]?.id;
 
   const classSlots = useMemo(() => {
     return allSlots.filter(

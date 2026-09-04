@@ -63,7 +63,7 @@ interface StudentRow {
 interface TermRow {
   id: string;
   name: string;
-  is_active: boolean;
+  is_current: boolean;
 }
 
 const EXAM_TYPES = [
@@ -128,9 +128,9 @@ export default function PrincipalExamsPage() {
               .eq("is_active", true),
             supabase
               .from("terms")
-              .select("id, name, is_active")
-              .eq("school_id", sid)
-              .eq("is_active", true)
+              .select("id, name, is_current, academic_years!inner(school_id)")
+              .eq("academic_years.school_id", sid)
+              .eq("is_current", true)
               .limit(1)
               .single(),
           ]);
