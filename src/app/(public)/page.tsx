@@ -3,7 +3,6 @@ import { Features } from "@/components/landing/features";
 import { TimetablePreview } from "@/components/landing/timetable-preview";
 import { Roles } from "@/components/landing/roles";
 import { CTA } from "@/components/landing/cta";
-import { Footer } from "@/components/landing/footer";
 import { PWAInstallBanner } from "@/components/pwa-install-banner";
 
 export default function LandingPage() {
@@ -14,7 +13,6 @@ export default function LandingPage() {
       <TimetablePreview />
       <Roles />
       <CTA />
-      <Footer />
       <PWAInstallBanner />
     </>
   );
