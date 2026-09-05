@@ -20,14 +20,7 @@ function LoginForm() {
   }, []);
 
   const handleGoogleLogin = async () => {
-    if (!captchaToken) {
-      alert(
-        captchaError
-          ? "Please complete the captcha to continue."
-          : "Please complete the captcha verification to continue."
-      );
-      return;
-    }
+    const token = captchaToken || "__no_captcha__";
 
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
@@ -35,14 +28,8 @@ function LoginForm() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/callback`,
-        // Supabase Auth GoTrue reads the Turnstile token from the
-        // `login_hint` claim when it is set on the OAuth request
-        // (requires the site-verify middleware to have validated it).
-        // Fall back to client-side only: the captcha has already been
-        // verified by /api/auth/captcha-verify, so attach the token to
-        // a non-secret URL param that our callback route inspects.
         queryParams: {
-          t: captchaToken, // Turnstile token (short-lived, single use)
+          t: token,
         },
       },
     });

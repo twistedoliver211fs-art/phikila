@@ -22,6 +22,14 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
+  const url = new URL(event.request.url);
+
+  // Only handle same-origin requests — skip external scripts (Turnstile, etc.)
+  if (url.origin !== self.location.origin) return;
+
+  // Only cache navigation and static assets, not API calls
+  if (url.pathname.startsWith("/api/")) return;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {

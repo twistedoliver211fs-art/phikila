@@ -62,7 +62,19 @@ export function TurnstileWidget({
     [onSuccess]
   );
 
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+  // If no site key is configured, skip captcha and auto-succeed
   useEffect(() => {
+    if (!siteKey) {
+      onSuccess("__no_captcha__");
+      return;
+    }
+  }, [siteKey, onSuccess]);
+
+  useEffect(() => {
+    if (!siteKey) return;
+
     let cleanup: (() => void) | undefined;
 
     const init = async () => {
@@ -73,14 +85,12 @@ export function TurnstileWidget({
       if (!api) return;
 
       const result = api.render(containerRef.current, {
-        sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "",
+        sitekey: siteKey,
         theme: "light",
         size: "normal",
         callback: (token: string) => handleSuccess(token),
         expire_callback: onExpire,
         error_callback: onError,
-        // Allow the widget to remember the user across page navigations
-        // within the same browser session (turnstile "may persist" model).
         "pen": false,
       });
       renderedRef.current = result;
@@ -92,7 +102,9 @@ export function TurnstileWidget({
       renderedRef.current?.reset();
       renderedRef.current = null;
     };
-  }, [handleSuccess, onExpire, onError]);
+  }, [siteKey, handleSuccess, onExpire, onError]);
+
+  if (!siteKey) return null;
 
   return (
     <div
