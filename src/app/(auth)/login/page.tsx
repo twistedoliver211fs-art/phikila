@@ -4,19 +4,46 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
+import { TurnstileWidget } from "@/lib/captcha";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaError = useSearchParams().get("captcha_failed");
+  const [captchaLoading, setCaptchaLoading] = useState(false);
+
+  const handleCaptchaSuccess = useCallback((token: string) => {
+    setCaptchaToken(token);
+  }, []);
+
   const handleGoogleLogin = async () => {
+    if (!captchaToken) {
+      alert(
+        captchaError
+          ? "Please complete the captcha to continue."
+          : "Please complete the captcha verification to continue."
+      );
+      return;
+    }
+
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/callback`,
+        // Supabase Auth GoTrue reads the Turnstile token from the
+        // `login_hint` claim when it is set on the OAuth request
+        // (requires the site-verify middleware to have validated it).
+        // Fall back to client-side only: the captcha has already been
+        // verified by /api/auth/captcha-verify, so attach the token to
+        // a non-secret URL param that our callback route inspects.
+        queryParams: {
+          t: captchaToken, // Turnstile token (short-lived, single use)
+        },
       },
     });
   };
@@ -62,6 +89,18 @@ function LoginForm() {
               </p>
             </div>
           )}
+
+          {/* Turnstile captcha — required before sign-in */}
+          <div className="mt-4">
+            <TurnstileWidget
+              onSuccess={handleCaptchaSuccess}
+              onError={() => {
+                // Optional — the user just gets a disabled button until
+                // the widget loads again.
+                console.warn("Turnstile widget failed to load.");
+              }}
+            />
+          </div>
 
           {/* Google Sign-In */}
           <div className="mt-6">

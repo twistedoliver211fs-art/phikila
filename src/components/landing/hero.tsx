@@ -28,11 +28,11 @@ export function Hero() {
   const dashInView = useInView(dashboardRef, { once: true, amount: 0.2 });
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Subtle gradient orbs behind hero */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-primary/[0.04] blur-3xl" />
-        <div className="absolute top-1/2 -left-40 h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-3xl" />
+    <section className="relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
+      {/* Grid pattern */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
       </div>
 
       {/* Nav */}
@@ -70,13 +70,13 @@ export function Hero() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login">
+            <Link href="/demo">
               <Button variant="ghost" size="sm">
-                Sign In
+                Request a Demo
               </Button>
             </Link>
             <Link href="/login">
-              <Button size="sm">Register your School</Button>
+              <Button size="sm">Get Started</Button>
             </Link>
           </div>
 
@@ -109,14 +109,14 @@ export function Hero() {
               </a>
             ))}
             <div className="mt-3 flex flex-col gap-2">
-              <Link href="/login">
+              <Link href="/demo">
                 <Button variant="outline" className="w-full" size="sm">
-                  Sign In
+                  Request a Demo
                 </Button>
               </Link>
               <Link href="/login">
                 <Button className="w-full" size="sm">
-                  Register your School
+                  Get Started
                 </Button>
               </Link>
             </div>
@@ -161,14 +161,10 @@ export function Hero() {
             className="mt-8 flex flex-wrap gap-3"
           >
             <Link href="/login">
-              <Button size="lg" className="text-base px-6">
-                Register your School
-              </Button>
+              <Button size="lg" className="text-base px-6">Get Started</Button>
             </Link>
-            <Link href="/login">
-              <Button variant="outline" size="lg" className="text-base px-6">
-                Sign in with Google
-              </Button>
+            <Link href="/demo">
+              <Button variant="outline" size="lg" className="text-base px-6">Request a Demo</Button>
             </Link>
           </motion.div>
         </motion.div>
