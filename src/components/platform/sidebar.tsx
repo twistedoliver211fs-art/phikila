@@ -39,14 +39,9 @@ interface SidebarProps {
 const navConfig: Record<string, { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[]> = {
   super_admin: [
     { label: "Dashboard", href: "/super-admin", icon: LayoutDashboard },
-    { label: "Schools", href: "/super-admin", icon: School },
-    { label: "Users", href: "/super-admin", icon: Users },
-    { label: "Subscriptions", href: "/super-admin", icon: CreditCard },
-    { label: "Monitoring", href: "/super-admin", icon: Activity },
-    { label: "Communication", href: "/super-admin", icon: MessageSquare },
-    { label: "Reports", href: "/super-admin", icon: BarChart3 },
+    { label: "Schools", href: "/super-admin/schools", icon: School },
+    { label: "Users", href: "/super-admin/users", icon: Users },
     { label: "Audit Log", href: "/super-admin/audit", icon: FileText },
-    { label: "Settings", href: "/super-admin", icon: Settings },
   ],
   principal: [
     { label: "Dashboard", href: "/principal", icon: LayoutDashboard },

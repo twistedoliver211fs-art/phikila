@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 const portalRoutes: Record<string, string> = {
   super_admin: "/super-admin",
@@ -15,6 +16,15 @@ const portalRoutes: Record<string, string> = {
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const turnstileToken = searchParams.get("t");
+
+  // Verify Turnstile token if present (skip for "__no_captcha__" when no site key)
+  if (turnstileToken && turnstileToken !== "__no_captcha__") {
+    const valid = await verifyTurnstileToken(turnstileToken);
+    if (!valid) {
+      return NextResponse.redirect(`${origin}/login?error=captcha_failed`);
+    }
+  }
 
   if (code) {
     const supabase = await createClient();

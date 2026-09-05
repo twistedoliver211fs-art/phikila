@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ShieldX } from "lucide-react";
+import { ShieldX, School } from "lucide-react";
 
 export default function NoAccessPage() {
   return (
@@ -13,15 +13,18 @@ export default function NoAccessPage() {
           No School Access
         </h1>
         <p className="mt-3 text-muted-foreground max-w-md mx-auto">
-          Your account doesn&apos;t have access to any school yet. Contact your
-          school administrator to get invited, or register a new school.
+          Your account doesn&apos;t have access to any school yet. Register your
+          own school or contact your school administrator to get invited.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/">
-            <Button variant="outline">Go Home</Button>
+          <Link href="/register/school">
+            <Button className="gap-2">
+              <School className="h-4 w-4" />
+              Register Your School
+            </Button>
           </Link>
           <Link href="/login">
-            <Button>Sign In Again</Button>
+            <Button variant="outline">Sign In Again</Button>
           </Link>
         </div>
       </div>
