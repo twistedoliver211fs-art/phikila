@@ -131,7 +131,7 @@ function LoginForm() {
             </Button>
           </div>
 
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <p className="mt-4 text-center text-xs text-white/70">
             Phikila uses Google to securely authenticate your account.
             <br />
             No Phikila password is required.
@@ -140,15 +140,15 @@ function LoginForm() {
 
         {/* Alternate actions */}
         <div className="mt-6 text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/80">
             Don&apos;t have a school?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link href="/register" className="font-medium text-white hover:underline">
               Register your School
             </Link>
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/80">
             Want to see Phikila first?{" "}
-            <Link href="/" className="font-medium text-primary hover:underline">
+            <Link href="/" className="font-medium text-white hover:underline">
               Get a Demo
             </Link>
           </p>
@@ -156,7 +156,7 @@ function LoginForm() {
 
         {/* Footer links */}
         <div className="mt-6 text-center">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-white/60">
             <Link href="/terms" className="hover:underline">Terms</Link>
             {" · "}
             <Link href="/privacy" className="hover:underline">Privacy</Link>

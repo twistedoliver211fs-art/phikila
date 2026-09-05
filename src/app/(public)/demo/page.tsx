@@ -81,7 +81,7 @@ export default function DemoPage() {
         <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">Get a Demo</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-white/70">
               See how Phikila can transform your school management.
             </p>
           </div>
@@ -174,12 +174,12 @@ export default function DemoPage() {
             </Button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <p className="mt-4 text-center text-xs text-white/60">
             We&apos;ll never share your information. No spam, ever.
           </p>
         </div>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-white/70">
           <Link href="/" className="hover:underline">&larr; Back to home</Link>
         </p>
       </div>
