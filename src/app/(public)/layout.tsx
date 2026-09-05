@@ -26,6 +26,12 @@ export default function PublicLayout({
             <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Home
             </Link>
+            <Link href="/download" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Download
+            </Link>
+            <Link href="/security" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Security
+            </Link>
             <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Documentation
             </Link>

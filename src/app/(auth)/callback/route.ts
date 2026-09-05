@@ -18,12 +18,27 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const turnstileToken = searchParams.get("t");
 
-  // Verify Turnstile token if present (skip for "__no_captcha__" when no site key)
+  // Optional explicit destination (e.g. /register/school when signing in as
+  // part of school registration). Only relative paths starting with a single
+  // "/" are allowed, to prevent open redirects.
+  const next = searchParams.get("next");
+  const safeNext =
+    next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+
+  // Verify Turnstile token if present. `__no_captcha__` is only accepted when
+  // the deployment has no site key configured (local dev); if a site key is
+  // configured, it means the captcha was bypassed and the sign-in is rejected.
+  const captchaConfigured = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+
   if (turnstileToken && turnstileToken !== "__no_captcha__") {
     const valid = await verifyTurnstileToken(turnstileToken);
     if (!valid) {
       return NextResponse.redirect(`${origin}/login?error=captcha_failed`);
     }
+  } else if (captchaConfigured) {
+    // Token missing or the placeholder "__no_captcha__" while captcha is
+    // required — treat it as a failed security check.
+    return NextResponse.redirect(`${origin}/login?error=captcha_failed`);
   }
 
   if (code) {
@@ -36,6 +51,12 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
+        if (safeNext) {
+          // The destination was chosen before signing in (e.g. the school
+          // registration flow) — skip the role-based portal redirect.
+          return NextResponse.redirect(`${origin}${safeNext}`);
+        }
+
         const { data: members } = await supabase
           .from("school_members")
           .select("role")

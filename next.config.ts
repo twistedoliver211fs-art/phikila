@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withSerwist from "@serwist/next";
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -43,6 +44,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' blob: data: https:; " +
               "font-src 'self' data:; " +
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co; " +
+              "worker-src 'self' blob:; " +
               "frame-ancestors 'none'",
           },
         ],
@@ -51,4 +53,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development",
+})(nextConfig);

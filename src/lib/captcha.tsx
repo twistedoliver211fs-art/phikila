@@ -78,22 +78,29 @@ export function TurnstileWidget({
     let cleanup: (() => void) | undefined;
 
     const init = async () => {
-      await loadScript();
-      if (!containerRef.current) return;
+      try {
+        await loadScript();
+        if (!containerRef.current) return;
 
-      const api = (window as unknown as { turnstile: { render: (container: HTMLElement, opts: Record<string, unknown>) => WidgetRenderResult } }).turnstile;
-      if (!api) return;
+        const api = (window as unknown as { turnstile: { render: (container: HTMLElement, opts: Record<string, unknown>) => WidgetRenderResult } }).turnstile;
+        if (!api) {
+          onError?.();
+          return;
+        }
 
-      const result = api.render(containerRef.current, {
-        sitekey: siteKey,
-        theme: "light",
-        size: "normal",
-        callback: (token: string) => handleSuccess(token),
-        expire_callback: onExpire,
-        error_callback: onError,
-        "pen": false,
-      });
-      renderedRef.current = result;
+        const result = api.render(containerRef.current, {
+          sitekey: siteKey,
+          theme: "light",
+          size: "normal",
+          callback: (token: string) => handleSuccess(token),
+          expire_callback: onExpire,
+          error_callback: onError,
+        });
+        renderedRef.current = result;
+      } catch (err) {
+        console.error("[turnstile] Failed to initialise widget:", err);
+        onError?.();
+      }
     };
 
     init();

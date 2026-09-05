@@ -177,7 +177,7 @@ export function Roles() {
             {roles.map((item) => (
               <StaggerItem key={item.role}>
                 <div
-                  className={`group rounded-xl border bg-gradient-to-b p-5 ${item.color} transition-all duration-300 hover:-translate-y-1 hover:shadow-md`}
+                  className={`group rounded-xl border bg-gradient-to-b p-5 ${item.color} transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10`}
                 >
                   <h3 className="text-base font-semibold text-foreground">
                     {item.role}
@@ -209,7 +209,7 @@ export function Roles() {
           <StaggerGrid className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
             {channels.map((channel) => (
               <StaggerItem key={`${channel.from}-${channel.to}`}>
-                <div className="group rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
+                <div className="group rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
                   <div className="flex items-center gap-2 text-sm font-medium text-primary">
                     <span>{channel.from}</span>
                     <motion.span

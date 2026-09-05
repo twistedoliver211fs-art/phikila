@@ -73,8 +73,8 @@ export function Features() {
         <StaggerGrid className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature) => (
             <StaggerItem key={feature.title}>
-              <div className="group rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/15">
+              <div className="group rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/15">
                   <feature.icon className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-foreground">

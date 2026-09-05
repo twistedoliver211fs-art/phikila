@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle, School } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, LogIn, School } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 interface FormData {
   name: string;
@@ -16,8 +17,11 @@ interface FormData {
   address: string;
 }
 
+type AuthState = "loading" | "signed-in" | "signed-out";
+
 export default function RegisterSchoolPage() {
   const router = useRouter();
+  const [authState, setAuthState] = useState<AuthState>("loading");
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -29,6 +33,16 @@ export default function RegisterSchoolPage() {
     email: "",
     address: "",
   });
+
+  // School registration must be tied to a real account, so a session is
+  // required before showing the form. New users sign in with Google first;
+  // the login page sends them back here via the `next` param.
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setAuthState(user ? "signed-in" : "signed-out");
+    });
+  }, []);
 
   const update = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -48,6 +62,11 @@ export default function RegisterSchoolPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 401) {
+          // Session expired while filling in the form — ask for sign-in again.
+          setAuthState("signed-out");
+          return;
+        }
         setError(data.error || "Failed to register school");
         return;
       }
@@ -59,6 +78,61 @@ export default function RegisterSchoolPage() {
       setSubmitting(false);
     }
   };
+
+  const pageShell = "relative flex min-h-screen items-center justify-center px-4 bg-cover bg-center bg-no-repeat";
+
+  if (authState === "loading") {
+    return (
+      <section className={pageShell} style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}>
+        <div className="absolute inset-0 bg-black/50 -z-10" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent" />
+      </section>
+    );
+  }
+
+  if (authState === "signed-out") {
+    return (
+      <section className={pageShell} style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}>
+        <div className="absolute inset-0 bg-black/50 -z-10" />
+
+        <div className="w-full max-w-md">
+          <div className="mb-8 flex justify-center">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.jpeg" alt="Phikila" width={40} height={40} className="rounded-lg" />
+              <span className="text-xl font-bold tracking-tight text-white">Phikila</span>
+            </Link>
+          </div>
+
+          <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+              <School className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">Register Your School</h1>
+            <p className="mt-2 text-sm text-white/70">
+              First, sign in with Google so your school can be linked to your
+              account. You&apos;ll fill in the school details right after.
+            </p>
+
+            <Link href={`/login?next=${encodeURIComponent("/register/school")}`}>
+              <Button className="mt-6 w-full h-12 text-base gap-2">
+                <LogIn className="h-5 w-5" />
+                Continue with Google
+              </Button>
+            </Link>
+
+            <p className="mt-4 text-xs text-white/50">
+              Don&apos;t have an account yet? Signing in with Google will
+              create one automatically.
+            </p>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-white/60">
+            <Link href="/register" className="hover:underline">&larr; Back to options</Link>
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section

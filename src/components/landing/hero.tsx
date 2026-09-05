@@ -11,6 +11,7 @@ import {
   fadeUp,
   slideInRight,
 } from "./motion";
+import { Aurora } from "./aurora";
 
 export function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -18,8 +19,9 @@ export function Hero() {
   const dashInView = useInView(dashboardRef, { once: true, amount: 0.2 });
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
-      {/* Grid pattern */}
+    <section className="relative isolate overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
+      {/* Aurora + grid pattern */}
+      <Aurora />
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
@@ -62,10 +64,10 @@ export function Hero() {
             className="mt-8 flex flex-wrap gap-3"
           >
             <Link href="/login">
-              <Button size="lg" className="text-base px-6">Get Started</Button>
+              <Button variant="glow" size="lg" className="text-base px-6">Get Started</Button>
             </Link>
             <Link href="/demo">
-              <Button variant="outline" size="lg" className="text-base px-6">Request a Demo</Button>
+              <Button variant="outline" size="lg" className="text-base px-6 hover:border-primary/40 hover:text-primary">Request a Demo</Button>
             </Link>
           </motion.div>
         </motion.div>

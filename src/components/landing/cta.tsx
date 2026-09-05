@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Aurora } from "./aurora";
 
 export function CTA() {
   return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/[0.03] blur-3xl rounded-full" />
+    <section className="relative isolate overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 py-24">
+      <Aurora className="opacity-80" />
 
       <div className="relative mx-auto max-w-4xl px-4 text-center">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -17,10 +17,10 @@ export function CTA() {
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/login">
-            <Button size="lg" className="text-base px-8">Get Started Free</Button>
+            <Button variant="glow" size="lg" className="text-base px-8">Get Started Free</Button>
           </Link>
           <Link href="/demo">
-            <Button variant="outline" size="lg" className="text-base px-8">Request a Demo</Button>
+            <Button variant="outline" size="lg" className="text-base px-8 hover:border-primary/40 hover:text-primary">Request a Demo</Button>
           </Link>
         </div>
         <p className="mt-6 text-sm text-muted-foreground">

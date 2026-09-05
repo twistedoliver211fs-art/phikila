@@ -12,24 +12,32 @@ function LoginForm() {
   const error = searchParams.get("error");
 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaError = useSearchParams().get("captcha_failed");
-  const [captchaLoading, setCaptchaLoading] = useState(false);
 
   const handleCaptchaSuccess = useCallback((token: string) => {
     setCaptchaToken(token);
   }, []);
 
   const handleGoogleLogin = async () => {
-    const token = captchaToken || "__no_captcha__";
+    // Never sign in without a captcha token. `__no_captcha__` is only ever
+    // produced by the widget itself when no site key is configured.
+    if (!captchaToken) return;
+
+    // Preserve an explicit destination (e.g. /register/school when signing in
+    // as part of the registration flow). Only safe relative paths allowed.
+    const next = searchParams.get("next");
+    const safeNext =
+      next && next.startsWith("/") && !next.startsWith("//") ? next : null;
 
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/callback`,
+        redirectTo: `${window.location.origin}/callback${
+          safeNext ? `?next=${encodeURIComponent(safeNext)}` : ""
+        }`,
         queryParams: {
-          t: token,
+          t: captchaToken,
         },
       },
     });
@@ -72,6 +80,8 @@ function LoginForm() {
               <p className="text-sm font-medium text-red-800">
                 {error === "auth_failed"
                   ? "Sign-in failed. Please try again."
+                  : error === "captcha_failed"
+                  ? "Security check failed. Please complete the captcha and try again."
                   : "Something went wrong. Please try again."}
               </p>
             </div>
@@ -81,6 +91,7 @@ function LoginForm() {
           <div className="mt-4">
             <TurnstileWidget
               onSuccess={handleCaptchaSuccess}
+              onExpire={() => setCaptchaToken(null)}
               onError={() => {
                 // Optional — the user just gets a disabled button until
                 // the widget loads again.
@@ -89,10 +100,17 @@ function LoginForm() {
             />
           </div>
 
+          {!captchaToken && (
+            <p className="mt-3 text-center text-xs text-white/70">
+              Complete the security check to continue.
+            </p>
+          )}
+
           {/* Google Sign-In */}
           <div className="mt-6">
             <Button
               onClick={handleGoogleLogin}
+              disabled={!captchaToken}
               variant="outline"
               className="w-full h-12 text-base"
             >

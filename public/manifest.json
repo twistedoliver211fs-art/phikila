@@ -3,20 +3,70 @@
   "short_name": "Phikila",
   "description": "Run your school with clarity. Multi-school management platform.",
   "start_url": "/",
+  "scope": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4F46E5",
   "orientation": "any",
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/logo.jpeg",
+      "src": "/icons/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
-      "src": "/logo.jpeg",
+      "src": "/icons/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Attendance",
+      "url": "/principal/attendance",
+      "icons": [{ "src": "/icons/shortcut-attendance.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Timetable",
+      "url": "/principal/timetable",
+      "icons": [{ "src": "/icons/shortcut-timetable.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Exams",
+      "url": "/principal/exams",
+      "icons": [{ "src": "/icons/shortcut-exams.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Phikila Dashboard"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Phikila Mobile"
     }
   ],
   "categories": ["education", "business"]
