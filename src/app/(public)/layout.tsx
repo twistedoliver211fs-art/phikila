@@ -26,6 +26,9 @@ export default function PublicLayout({
             <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Home
             </Link>
+            <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Documentation
+            </Link>
             <Link href="/privacy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Privacy
             </Link>
@@ -45,23 +48,70 @@ export default function PublicLayout({
       </header>
 
       {/* Content */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 relative">
+        {/* Aurora background */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute -top-[40%] -left-[20%] h-[80vh] w-[60vw] rounded-full bg-primary/[0.03] blur-[120px]" />
+          <div className="absolute -bottom-[30%] -right-[10%] h-[60vh] w-[50vw] rounded-full bg-purple-500/[0.03] blur-[100px]" />
+          <div className="absolute top-[20%] right-[10%] h-[40vh] w-[30vw] rounded-full bg-blue-400/[0.02] blur-[80px]" />
+        </div>
+        {children}
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Image src="/logo.jpeg" alt="Phikila" width={24} height={24} className="rounded-md" />
-              <span className="text-sm font-bold">Phikila</span>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+            <div className="col-span-2 sm:col-span-1">
+              <div className="flex items-center gap-2">
+                <Image src="/logo.jpeg" alt="Phikila" width={28} height={28} className="rounded-md" />
+                <span className="text-base font-bold tracking-tight">Phikila</span>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                The school management platform built for clarity, action, and
+                connection.
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Built by{" "}
+                <a href="https://omixsystems.store" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  Omix Digital Solutions
+                </a>{" "}
+                &middot;{" "}
+                <a href="mailto:omixsystems@gmail.com" className="underline hover:text-foreground">
+                  omixsystems@gmail.com
+                </a>
+              </p>
             </div>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-              <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Platform</h3>
+              <ul className="mt-3 space-y-2">
+                <li><Link href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Features</Link></li>
+                <li><Link href="/#timetable" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Timetable</Link></li>
+                <li><Link href="/#roles" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">For Schools</Link></li>
+              </ul>
             </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Legal</h3>
+              <ul className="mt-3 space-y-2">
+                <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Terms of Service</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Support</h3>
+              <ul className="mt-3 space-y-2">
+                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Documentation</Link></li>
+                <li><a href="https://wa.me/254768214649" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">WhatsApp Us</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-10 border-t border-border pt-6">
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} Phikila. All rights reserved.
+              &copy; 2026 Omix Digital Solutions. All rights reserved.
             </p>
           </div>
         </div>

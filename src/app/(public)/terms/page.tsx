@@ -79,8 +79,8 @@ export default function TermsPage() {
           </h2>
           <p>
             For questions about these terms, contact us at{" "}
-            <a href="mailto:legal@phikila.app" className="text-primary hover:underline">
-              legal@phikila.app
+            <a href="mailto:omixsystems@gmail.com" className="text-primary hover:underline">
+              omixsystems@gmail.com
             </a>
             .
           </p>

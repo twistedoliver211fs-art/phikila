@@ -14,8 +14,8 @@ const footerLinks = {
     { label: "Terms of Service", href: "/terms" },
   ],
   Support: [
-    { label: "Contact", href: "#" },
-    { label: "Documentation", href: "#" },
+    { label: "Documentation", href: "/docs" },
+    { label: "WhatsApp Us", href: "https://wa.me/254768214649" },
   ],
 };
 
@@ -41,6 +41,16 @@ export function Footer() {
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
                 The school management platform built for clarity, action, and
                 connection.
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Built by{" "}
+                <a href="https://omixsystems.store" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  Omix Digital Solutions
+                </a>{" "}
+                &middot;{" "}
+                <a href="mailto:omixsystems@gmail.com" className="underline hover:text-foreground">
+                  omixsystems@gmail.com
+                </a>
               </p>
             </div>
 
@@ -68,7 +78,7 @@ export function Footer() {
 
         <div className="mt-10 border-t border-border pt-6">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Phikila. All rights reserved.
+            &copy; 2026 Omix Digital Solutions. All rights reserved.
           </p>
         </div>
       </div>

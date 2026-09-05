@@ -42,12 +42,13 @@ export default function DemoPage() {
 
   if (submitted) {
     return (
-      <section className="relative flex min-h-screen items-center justify-center px-4">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-green-500/[0.04] blur-3xl" />
-        </div>
+      <section
+        className="relative flex min-h-screen items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/50 -z-10" />
         <div className="w-full max-w-md text-center">
-          <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
+          <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-foreground">Request Received!</h1>
             <p className="mt-4 text-muted-foreground">
@@ -63,10 +64,11 @@ export default function DemoPage() {
   }
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center px-4">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.04] blur-3xl" />
-      </div>
+    <section
+      className="relative flex min-h-screen items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-black/50 -z-10" />
 
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
@@ -76,7 +78,7 @@ export default function DemoPage() {
           </Link>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
+        <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">Get a Demo</h1>
             <p className="mt-2 text-sm text-muted-foreground">

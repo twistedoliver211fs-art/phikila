@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; " +
-              "script-src 'self' 'unsafe-inline' https://*.supabase.co; " +
+              "script-src 'self' 'unsafe-inline' https://*.supabase.co https://challenges.cloudflare.com; " +
               "style-src 'self' 'unsafe-inline'; " +
               "img-src 'self' blob: data: https:; " +
               "font-src 'self' data:; " +

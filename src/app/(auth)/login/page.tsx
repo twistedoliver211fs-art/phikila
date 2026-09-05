@@ -49,11 +49,11 @@ function LoginForm() {
   };
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center px-4">
-      {/* Background gradient */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.04] blur-3xl" />
-      </div>
+    <section
+      className="relative flex min-h-screen items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-black/50 -z-10" />
 
       <div className="w-full max-w-md">
         {/* Logo */}
@@ -71,7 +71,7 @@ function LoginForm() {
         </div>
 
         {/* Card */}
-        <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
+        <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
             <p className="mt-2 text-sm text-muted-foreground">

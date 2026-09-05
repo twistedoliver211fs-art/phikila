@@ -74,8 +74,8 @@ export default function PrivacyPage() {
           </h2>
           <p>
             For privacy-related inquiries, contact us at{" "}
-            <a href="mailto:privacy@phikila.app" className="text-primary hover:underline">
-              privacy@phikila.app
+            <a href="mailto:omixsystems@gmail.com" className="text-primary hover:underline">
+              omixsystems@gmail.com
             </a>
             .
           </p>
