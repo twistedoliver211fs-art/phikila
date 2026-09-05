@@ -3,8 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import {
@@ -14,15 +12,7 @@ import {
   slideInRight,
 } from "./motion";
 
-const navLinks = [
-  { label: "Platform", href: "#platform" },
-  { label: "Features", href: "#features" },
-  { label: "Timetable", href: "#timetable" },
-  { label: "For Schools", href: "#roles" },
-];
-
 export function Hero() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const dashboardRef = useRef<HTMLDivElement>(null);
   const dashInView = useInView(dashboardRef, { once: true, amount: 0.2 });
@@ -34,95 +24,6 @@ export function Hero() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
       </div>
-
-      {/* Nav */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md"
-      >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/logo.jpeg"
-              alt="Phikila"
-              width={32}
-              height={32}
-              className="rounded-md"
-            />
-            <span className="text-lg font-bold tracking-tight">Phikila</span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link, i) => (
-              <motion.a
-                key={link.href}
-                href={link.href}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.05 }}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </motion.a>
-            ))}
-          </nav>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/demo">
-              <Button variant="ghost" size="sm">
-                Request a Demo
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="sm">Get Started</Button>
-            </Link>
-          </div>
-
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
-        </div>
-
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border/40 bg-background px-4 pb-4 pt-2"
-          >
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
-            <div className="mt-3 flex flex-col gap-2">
-              <Link href="/demo">
-                <Button variant="outline" className="w-full" size="sm">
-                  Request a Demo
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button className="w-full" size="sm">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </motion.header>
 
       {/* Hero Content */}
       <div
