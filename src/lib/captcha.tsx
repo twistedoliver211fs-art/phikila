@@ -25,7 +25,7 @@ export interface TurnstileWidgetProps {
   id?: string;
 }
 
-const SCRIPT_SRC = "//challenges.cloudflare.com/turnstile/v0/api.js?onload=turnstileOnLoad";
+const SCRIPT_SRC = "//challenges.cloudflare.com/turnstile/v0/api.js";
 
 function loadScript(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -40,12 +40,6 @@ function loadScript(): Promise<void> {
     script.onload = () => resolve();
     document.head.appendChild(script);
   });
-}
-
-function turnstileOnLoad(this: Window) {
-  if (typeof window !== "undefined" && (window as unknown as { turnstile: unknown }).turnstile) {
-    // The Turnstile API will now be available as window.turnstile.render().
-  }
 }
 
 interface WidgetRenderResult {
