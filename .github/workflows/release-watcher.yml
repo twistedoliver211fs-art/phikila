@@ -1,0 +1,19 @@
+name: Release Watcher
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-releases:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check for new upstream releases
+        run: |
+          echo "Checking latest release..."
+          curl -s https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest | jq '.tag_name'

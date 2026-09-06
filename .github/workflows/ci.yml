@@ -1,0 +1,167 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
+
+  deploy:
+    needs: lint-and-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+  build-desktop-linux:
+    needs: lint-and-build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Linux dependencies
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - run: npm ci
+      - run: npm run build -- --webpack
+      - name: Build Tauri Linux
+        run: npx tauri build
+      - name: Rename artifacts
+        run: |
+          mkdir -p dist
+          VERSION="${GITHUB_REF#refs/tags/}"
+          find src-tauri/target/release/bundle -name "*.deb" -exec cp {} dist/phikila-${VERSION}-linux-x86_64.deb \;
+          find src-tauri/target/release/bundle -name "*.AppImage" -exec cp {} dist/phikila-${VERSION}-linux-x86_64.AppImage \;
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux
+          path: dist/*
+          retention-days: 5
+
+  build-desktop-windows:
+    needs: lint-and-build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - run: npm ci
+      - run: npm run build
+      - name: Build Tauri Windows
+        run: npx tauri build
+      - name: Rename artifacts
+        shell: bash
+        run: |
+          mkdir -p dist
+          VERSION="${GITHUB_REF#refs/tags/}"
+          find src-tauri/target/release/bundle -name "*.exe" -exec cp {} dist/phikila-${VERSION}-windows-x64.exe \; 2>/dev/null || true
+          find src-tauri/target/release/bundle -name "*.msi" -exec cp {} dist/phikila-${VERSION}-windows-x64.msi \; 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows
+          path: dist/*
+          retention-days: 5
+
+  build-android:
+    needs: lint-and-build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm run build -- --webpack
+      - name: Sync Capacitor
+        run: npx cap sync android
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug
+      - name: Build release APK
+        run: cd android && ./gradlew assembleRelease
+      - name: Rename artifacts
+        run: |
+          mkdir -p dist
+          VERSION="${GITHUB_REF#refs/tags/}"
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/phikila-${VERSION}-android-debug.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk dist/phikila-${VERSION}-android-release.apk 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/*
+          retention-days: 5
+
+  create-release:
+    needs: [build-desktop-linux, build-desktop-windows, build-android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: List artifacts
+        run: find artifacts -type f | head -20
+      - name: Create checksums
+        run: |
+          cd artifacts
+          find . -type f \( -name "*.deb" -o -name "*.AppImage" -o -name "*.exe" -o -name "*.msi" -o -name "*.apk" \) -exec sha256sum {} \; > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          generate_release_notes: true
+          files: artifacts/*

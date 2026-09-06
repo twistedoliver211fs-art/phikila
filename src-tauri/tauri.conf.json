@@ -10,7 +10,6 @@
     "beforeBuildCommand": "npm run build"
   },
   "app": {
-    "title": "Phikila",
     "windows": [
       {
         "title": "Phikila - School Management",
@@ -34,5 +33,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": ["https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest"]
+    }
   }
 }

@@ -31,3 +31,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+src-tauri/target/
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/
