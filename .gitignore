@@ -35,4 +35,7 @@ src-tauri/target/
 android/.gradle/
 android/app/build/
 android/build/
-android/capacitor-cordova-android-plugins/build/
+# android signing
+*.jks
+*.keystore
+key.properties
