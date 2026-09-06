@@ -9,10 +9,10 @@
 
 const REPO = "twistedoliver211fs-art/phikila";
 const DOWNLOAD_BASE = `https://github.com/${REPO}/releases/download`;
-const TAG = "v0.1.0";
+const TAG = "v0.2.1";
 
 export const RELEASE = {
-  version: "0.1.0",
+  version: "0.2.1",
   tag: TAG,
   releasedAt: "2026-09-06",
   repoUrl: `https://github.com/${REPO}`,
@@ -21,7 +21,7 @@ export const RELEASE = {
   checksums: {
     filename: "SHA256SUMS.txt",
     url: `${DOWNLOAD_BASE}/${TAG}/SHA256SUMS.txt`,
-    sha256: "6bda092c4b27067ba2683fded55b0b12221d4baf2c5b094332790ab9a66b9310",
+    sha256: "0961dba9d7780b3c54a4599ba0288d56f8e913cade54d070959c23e43460dec6",
   },
   publisher: {
     name: "Omix Digital Solutions",
@@ -65,28 +65,28 @@ export const PLATFORMS: PlatformDownload[] = [
     name: "Android",
     icon: "smartphone",
     tagline: "Native APK with offline-first sync",
-    requirements: "Android 7.0 or newer · ~10.9 MB",
-    assets: [
-      {
-        id: "android-debug",
-        label: "APK",
-        filename: `phikila-${TAG}-android-debug.apk`,
-        url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-android-debug.apk`,
-        size: "10.9 MB",
-        sha256: "5e4f6c2f8824ffc0aafc6f1f675a1c5146a0b7df72af00412dbdbe5eec642485",
-        recommended: true,
-        note: "Debug-signed — installs directly on any device",
-      },
-      {
-        id: "android-release",
-        label: "Unsigned release APK",
-        filename: `phikila-${TAG}-android-release.apk`,
-        url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-android-release.apk`,
-        size: "8.9 MB",
-        sha256: "ba1caae5e3bc385696259c85b3c0a9b72beb24257976b764f27941259d57e86c",
-        note: "For signing with your own keystore (Play Store distribution)",
-      },
-    ],
+    requirements: "Android 7.0 or newer · ~66 MB",
+  assets: [
+    {
+      id: "android-release",
+      label: "APK (signed)",
+      filename: `phikila-${TAG}-android-release.apk`,
+      url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-android-release.apk`,
+      size: "66.3 MB",
+      sha256: "8c50f21b15b75633a036aad577ac38415f241167a9351ccecf9597ec03978429",
+      recommended: true,
+      note: "Signed release build — installs directly on any device",
+    },
+    {
+      id: "android-debug",
+      label: "Debug APK",
+      filename: `phikila-${TAG}-android-debug.apk`,
+      url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-android-debug.apk`,
+      size: "84.2 MB",
+      sha256: "d48485d1ac898f23ef28c78f1b69e667a1c6d2353eb60d3df6853ca53f877bba",
+      note: "Debug-signed, unminified — for development and testing",
+    },
+  ],
     installSteps: [
       "Download the APK and tap it to install.",
       "If prompted, allow installs from your browser (Settings → Install unknown apps).",
@@ -99,14 +99,15 @@ export const PLATFORMS: PlatformDownload[] = [
     icon: "monitor",
     tagline: "Desktop app for day-to-day administration",
     requirements: "Windows 10/11, 64-bit · ~28 MB",
+    // (sizes verified against the v0.2.1 release assets)
     assets: [
       {
         id: "windows-exe",
         label: "Installer (.exe)",
         filename: `phikila-${TAG}-windows-x64.exe`,
         url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-windows-x64.exe`,
-        size: "28.1 MB",
-        sha256: "444efda76e2414cf92d2477426748b114c17bef20a6e9fb600b512dd7226714c",
+        size: "28.2 MB",
+        sha256: "6313884828ccde2cddf2d361a57cc3eb3dea6f023c87959f1af21b6f14921956",
         recommended: true,
       },
       {
@@ -115,7 +116,7 @@ export const PLATFORMS: PlatformDownload[] = [
         filename: `phikila-${TAG}-windows-x64.msi`,
         url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-windows-x64.msi`,
         size: "29.8 MB",
-        sha256: "6def278c7f35f80f06cc0de64323fd1871e248a91615a7b14818144151e7b594",
+        sha256: "045e10b0abeca001885cc6fb1d71f77c91b9e9c473b0ac50e6e90b4ae7e8abf1",
         note: "For IT-managed deployment (GPO / msiexec)",
       },
     ],
@@ -138,22 +139,22 @@ export const PLATFORMS: PlatformDownload[] = [
         filename: `phikila-${TAG}-linux-x86_64.deb`,
         url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-linux-x86_64.deb`,
         size: "29.9 MB",
-        sha256: "9d1a5d980218c4128a8e2f041d33d34c80be3ee4645941a8ab24716c5232c8bc",
+        sha256: "acb17a452cc94fb701232b20560014c86981b60e7bd717389675ef4830c4a1e5",
         recommended: true,
-        note: "sudo apt install ./phikila-v0.1.0-linux-x86_64.deb",
+        note: "sudo apt install ./phikila-v0.2.1-linux-x86_64.deb",
       },
       {
         id: "linux-appimage",
         label: "AppImage",
         filename: `phikila-${TAG}-linux-x86_64.AppImage`,
         url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-linux-x86_64.AppImage`,
-        size: "101 MB",
-        sha256: "4275e1cac345d2630993e72f132a1369c00d687323d58273478b5e6a9d411c68",
+        size: "101.2 MB",
+        sha256: "f810860e3aee91aa33645f4f5941d554b4066bfa132f1c37b70cf23af471e7c0",
         note: "chmod +x && run — no installation required",
       },
     ],
     installSteps: [
-      "Install the .deb: sudo apt install ./phikila-v0.1.0-linux-x86_64.deb",
+      "Install the .deb: sudo apt install ./phikila-v0.2.1-linux-x86_64.deb",
       "Or run the AppImage: chmod +x phikila-*.AppImage && ./phikila-*.AppImage",
       "Launch Phikila from your applications menu.",
     ],
@@ -196,6 +197,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.2.1",
+    date: "September 2026",
+    items: [
+      "Signed Android release APK — installs without Play Protect warnings",
+      "CI signing, Tauri CSP and Android network security hardening",
+      "All v0.1.0 platform features: role portals, timetable builder, attendance, exams, fees, offline sync",
+    ],
+  },
   {
     version: "0.1.0",
     date: "September 2026",

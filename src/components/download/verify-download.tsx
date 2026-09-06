@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "./copy-button";
-import { PLATFORMS } from "@/lib/releases";
+import { PLATFORMS, RELEASE } from "@/lib/releases";
 
 type Status = "idle" | "hashing" | "match" | "unknown" | "error";
 
@@ -173,7 +173,7 @@ export function VerifyDownload() {
           <p className="mt-1.5 text-sm text-muted-foreground">
             <strong className="text-foreground">{file?.name}</strong> matches{" "}
             <strong className="text-foreground">{matched.label}</strong> from the
-            official v0.1.0 release.
+            official v{RELEASE.version} release.
           </p>
           <div className="mt-3 flex min-w-0 items-center gap-1.5">
             <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1 font-mono text-[11px] text-muted-foreground">
@@ -202,7 +202,7 @@ export function VerifyDownload() {
           </div>
           <p className="mt-1.5 text-sm text-amber-900/80 dark:text-amber-200/80">
             <strong>{file?.name}</strong> doesn&apos;t match any official
-            v0.1.0 asset. If you didn&apos;t build it yourself, download a fresh
+            v{RELEASE.version} asset. If you didn&apos;t build it yourself, download a fresh
             copy from this page. ({file ? formatSize(file.size) : ""} ·{" "}
             {file?.name})
           </p>

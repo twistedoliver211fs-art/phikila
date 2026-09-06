@@ -9,6 +9,7 @@ import { VerifyDownload } from "@/components/download/verify-download";
 import { DeferredMount } from "@/components/download/deferred-mount";
 import {
   CHANGELOG,
+  PLATFORMS,
   RELEASE,
   WEB_APP_URL,
 } from "@/lib/releases";
@@ -32,6 +33,13 @@ const REPO_RELEASES_API =
   "https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest";
 
 export default function DownloadPage() {
+  // QR code points at the recommended Android asset — derived from the
+  // release data so it follows version bumps automatically.
+  const androidPlatform = PLATFORMS.find((p) => p.id === "android");
+  const recommendedApk =
+    androidPlatform?.assets.find((a) => a.recommended) ??
+    androidPlatform?.assets[0];
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
       {/* ── Header ─────────────────────────────────────────────── */}
@@ -86,9 +94,7 @@ export default function DownloadPage() {
       {/* ── QR code (deferred — below the fold) ─────────────────── */}
       <section className="mt-8" aria-label="Scan to download">
         <DeferredMount minHeight={130} label="Loading QR code">
-          <QRCodeCard
-            url="https://github.com/twistedoliver211fs-art/phikila/releases/download/v0.1.0/phikila-v0.1.0-android-debug.apk"
-          />
+          <QRCodeCard url={recommendedApk?.url ?? RELEASE.releaseUrl} />
         </DeferredMount>
       </section>
 
