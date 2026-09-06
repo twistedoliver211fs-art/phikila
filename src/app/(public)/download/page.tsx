@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Shield, Smartphone, Monitor, Apple, Terminal, QrCode, Copy, Check, ExternalLink } from "lucide-react";
+import { Download, Shield, Smartphone, Monitor, Apple, Terminal, QrCode, Copy, Check, ExternalLink, Clock } from "lucide-react";
 
 type Platform = "android" | "windows" | "linux" | "macos" | "ios" | "unknown";
 
@@ -18,54 +18,59 @@ function detectPlatform(): Platform {
   return "unknown";
 }
 
+const RELEASE_URL = "https://github.com/twistedoliver211fs-art/phikila/releases/tag/v0.1.0";
+
 const platforms = [
   {
     id: "android" as Platform,
     name: "Android",
     icon: Smartphone,
-    format: "APK",
-    size: "~15 MB",
-    checksum: "SHA-256: a1b2c3d4e5f6...",
-    downloadUrl: "https://github.com/twistedoliver211fs-art/phikila/releases/download/v0.1.0/phikila-v0.1.0.apk",
-    instructions: "Enable 'Install from unknown sources' in your Android settings.",
+    available: true,
+    builds: [
+      { label: "Release APK", file: "phikila-v0.1.0-android-release.apk", size: "8.9 MB", checksum: "ba1caae5e3bc385696259c85b3c0a9b72beb24257976b764f27941259d57e86c" },
+      { label: "Debug APK", file: "phikila-v0.1.0-android-debug.apk", size: "10.9 MB", checksum: "5e4f6c2f8824ffc0aafc6f1f675a1c5146a0b7df72af00412dbdbe5eec642485" },
+    ],
+    instructions: "Enable 'Install from unknown sources' in your Android settings, then open the APK.",
   },
   {
     id: "windows" as Platform,
     name: "Windows",
     icon: Monitor,
-    format: ".exe",
-    size: "~25 MB",
-    checksum: "SHA-256: f6e5d4c3b2a1...",
-    downloadUrl: "https://github.com/twistedoliver211fs-art/phikila/releases/download/v0.1.0/phikila-v0.1.0.exe",
+    available: true,
+    builds: [
+      { label: "Installer (.exe)", file: "phikila-v0.1.0-windows-x64.exe", size: "28.1 MB", checksum: "444efda76e2414cf92d2477426748b114c17bef20a6e9fb600b512dd7226714c" },
+      { label: "MSI Installer", file: "phikila-v0.1.0-windows-x64.msi", size: "29.8 MB", checksum: "6def278c7f35f80f06cc0de64323fd1871e248a91615a7b14818144151e7b594" },
+    ],
     instructions: "Run the installer. Windows SmartScreen may warn — click 'More info' → 'Run anyway'.",
   },
   {
     id: "linux" as Platform,
     name: "Linux",
     icon: Terminal,
-    format: ".AppImage / .deb",
-    size: "~30 MB",
-    checksum: "SHA-256: 1a2b3c4d5e6f...",
-    downloadUrl: "https://github.com/twistedoliver211fs-art/phikila/releases/download/v0.1.0/phikila-v0.1.0.AppImage",
-    instructions: "Make executable: chmod +x phikila.AppImage && ./phikila.AppImage",
+    available: true,
+    builds: [
+      { label: "Debian/Ubuntu (.deb)", file: "phikila-v0.1.0-linux-x86_64.deb", size: "29.9 MB", checksum: "9d1a5d980218c4128a8e2f041d33d34c80be3ee4645941a8ab24716c5232c8bc" },
+      { label: "AppImage (Portable)", file: "phikila-v0.1.0-linux-x86_64.AppImage", size: "101.2 MB", checksum: "4275e1cac345d2630993e72f132a1369c00d687323d58273478b5e6a9d411c68" },
+    ],
+    instructions: "DEB: sudo dpkg -i phikila.deb · AppImage: chmod +x && ./phikila.AppImage",
   },
   {
     id: "macos" as Platform,
     name: "macOS",
     icon: Apple,
-    format: ".dmg",
-    size: "~28 MB",
-    checksum: "SHA-256: 6f5e4d3c2b1a...",
-    downloadUrl: "https://github.com/twistedoliver211fs-art/phikila/releases/download/v0.1.0/phikila-v0.1.0.dmg",
-    instructions: "Open the DMG and drag Phikila to Applications. Right-click → Open to bypass Gatekeeper.",
+    available: false,
+    builds: [],
+    instructions: "Coming soon. Use the PWA install option in the meantime.",
+  },
+  {
+    id: "ios" as Platform,
+    name: "iOS",
+    icon: Smartphone,
+    available: false,
+    builds: [],
+    instructions: "Coming soon. Use the PWA install option in the meantime.",
   },
 ];
-
-const pwaInfo = {
-  name: "PWA (Web App)",
-  description: "Install directly from your browser. No download needed.",
-  instructions: "Click the install icon in your browser's address bar, or use the 'Install App' button on the landing page.",
-};
 
 export default function DownloadPage() {
   const [platform, setPlatform] = useState<Platform>("unknown");
@@ -75,7 +80,7 @@ export default function DownloadPage() {
     setPlatform(detectPlatform());
   }, []);
 
-  const primary = platforms.find((p) => p.id === platform);
+  const primary = platforms.find((p) => p.id === platform && p.available);
   const otherPlatforms = platforms.filter((p) => p.id !== platform);
 
   const copyChecksum = (checksum: string, id: string) => {
@@ -100,9 +105,9 @@ export default function DownloadPage() {
         <div className="mt-4 flex items-center justify-center gap-4 text-sm text-muted-foreground">
           <span>Version 0.1.0</span>
           <span>·</span>
-          <span>Released September 2026</span>
+          <span>September 2026</span>
           <span>·</span>
-          <span>By Omix Digital Solutions</span>
+          <span>Omix Digital Solutions</span>
         </div>
       </div>
 
@@ -117,21 +122,17 @@ export default function DownloadPage() {
             {primary.instructions}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href={primary.downloadUrl} download>
-              <Button size="lg" className="text-base px-8">
-                <Download className="h-5 w-5 mr-2" />
-                Download {primary.format}
-              </Button>
-            </a>
-            <a href={primary.downloadUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="lg" className="text-base px-8">
-                <ExternalLink className="h-5 w-5 mr-2" />
-                GitHub Release
-              </Button>
-            </a>
+            {primary.builds.map((build, i) => (
+              <a key={i} href={`${RELEASE_URL}/download/${build.file}`} download>
+                <Button size="lg" className="text-base px-8">
+                  <Download className="h-5 w-5 mr-2" />
+                  {build.label} ({build.size})
+                </Button>
+              </a>
+            ))}
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            {primary.size} · Self-signed · SHA-256 verified
+            Self-signed · SHA-256 verified
           </p>
         </div>
       )}
@@ -143,9 +144,9 @@ export default function DownloadPage() {
             <Shield className="h-5 w-5 text-green-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">{pwaInfo.name}</h3>
-            <p className="text-sm text-muted-foreground mt-1">{pwaInfo.description}</p>
-            <p className="text-sm text-muted-foreground mt-2">{pwaInfo.instructions}</p>
+            <h3 className="font-semibold text-foreground">PWA (Web App)</h3>
+            <p className="text-sm text-muted-foreground mt-1">Install directly from your browser. No download needed.</p>
+            <p className="text-sm text-muted-foreground mt-2">Click the install icon in your browser&apos;s address bar, or use the &apos;Get Started&apos; button on the landing page.</p>
             <Link href="/" className="inline-block mt-3">
               <Button variant="outline" size="sm">Open Phikila Web App</Button>
             </Link>
@@ -158,36 +159,54 @@ export default function DownloadPage() {
         <h2 className="text-xl font-bold text-foreground mb-6">All Platforms</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {otherPlatforms.map((p) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-6">
+            <div key={p.id} className={`rounded-xl border border-border bg-card p-6 ${!p.available ? "opacity-75" : ""}`}>
               <div className="flex items-center gap-3 mb-3">
                 <p.icon className="h-5 w-5 text-muted-foreground" />
                 <h3 className="font-semibold text-foreground">{p.name}</h3>
+                {!p.available && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    Coming Soon
+                  </span>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mb-4">{p.instructions}</p>
-              <div className="flex items-center gap-2">
-                <a href={p.downloadUrl} download>
-                  <Button size="sm">
-                    <Download className="h-4 w-4 mr-1.5" />
-                    {p.format}
-                  </Button>
-                </a>
-                <a href={p.downloadUrl} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="ghost">
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </a>
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <code className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded flex-1 truncate">
-                  {p.checksum}
-                </code>
-                <button
-                  onClick={() => copyChecksum(p.checksum, p.id)}
-                  className="shrink-0 p-1 hover:bg-muted rounded"
-                >
-                  {copied === p.id ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-                </button>
-              </div>
+
+              {p.available && p.builds.length > 0 && (
+                <>
+                  <div className="flex flex-col gap-2 mb-3">
+                    {p.builds.map((build, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <a href={`${RELEASE_URL}/download/${build.file}`} download>
+                          <Button size="sm">
+                            <Download className="h-4 w-4 mr-1.5" />
+                            {build.label}
+                          </Button>
+                        </a>
+                        <span className="text-xs text-muted-foreground">{build.size}</span>
+                        <a href={`${RELEASE_URL}/download/${build.file}`} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" variant="ghost">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                  {p.builds.map((build, i) => (
+                    <div key={i} className="mt-2 flex items-center gap-2">
+                      <code className="text-xs text-muted-foreground font-mono bg-muted px-2 py-1 rounded flex-1 truncate">
+                        SHA-256: {build.checksum.slice(0, 16)}...
+                      </code>
+                      <button
+                        onClick={() => copyChecksum(build.checksum, `${p.id}-${i}`)}
+                        className="shrink-0 p-1 hover:bg-muted rounded"
+                      >
+                        {copied === `${p.id}-${i}` ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                      </button>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -224,7 +243,7 @@ export default function DownloadPage() {
             <p className="font-medium text-foreground">Self-signed · SHA-256 verified</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Open Source</p>
+            <p className="text-muted-foreground">Source Code</p>
             <a href="https://github.com/twistedoliver211fs-art/phikila" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
               GitHub Repository
             </a>
@@ -262,7 +281,8 @@ export default function DownloadPage() {
               <li>Finance and fee management</li>
               <li>Admissions and student registration</li>
               <li>PWA installable on all devices</li>
-              <li>Android APK and Desktop apps (Windows, Linux, macOS)</li>
+              <li>Android APK (via GitHub Releases)</li>
+              <li>Desktop apps for Windows and Linux (via GitHub Releases)</li>
             </ul>
           </div>
         </div>
