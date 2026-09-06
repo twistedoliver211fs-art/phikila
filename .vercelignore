@@ -1,0 +1,9 @@
+node_modules/
+src-tauri/
+android/
+.github/
+*.apk
+*.deb
+*.AppImage
+*.exe
+*.msi
