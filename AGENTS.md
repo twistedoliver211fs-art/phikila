@@ -65,7 +65,7 @@ NEVER: `<Button asChild><Link>...</Link></Button>`
 
 ### CLI Tools
 - `npx supabase` — must use `npx` (not installed globally)
-- `gh` — GitHub CLI (authenticated)
+- `gh` — GitHub CLI (authenticated, manages repos/issues/releases/secrets)
 - `vercel` — Vercel CLI (authenticated as `twistedoliver211fs-1271`)
 
 ---
@@ -217,10 +217,21 @@ Generates: PWA icons, maskable icons, favicon.ico, Tauri icons, shortcut icons.
 
 ## CI/CD Secrets Required
 
-For Vercel auto-deploy in GitHub Actions, add these to repo Settings → Secrets → Actions:
-- `VERCEL_TOKEN` — from `npx vercel tokens create`
-- `VERCEL_ORG_ID` — from `.vercel/project.json`
-- `VERCEL_PROJECT_ID` — from `.vercel/project.json`
+### Via gh CLI (recommended):
+```bash
+gh secret set KEYSTORE_BASE64 < /tmp/keystore-base64.txt
+gh secret set KEYSTORE_PASSWORD --body "your-password"
+gh secret set KEY_ALIAS --body "phikila"
+gh secret set KEY_PASSWORD --body "your-password"
+
+# For Vercel deploy:
+gh secret set VERCEL_TOKEN --body "your-token"
+gh secret set VERCEL_ORG_ID --body "your-org-id"
+gh secret set VERCEL_PROJECT_ID --body "your-project-id"
+```
+
+### Via GitHub web UI:
+Go to `https://github.com/twistedoliver211fs-art/phikila/settings/secrets/actions` and add each secret manually.
 
 ---
 
