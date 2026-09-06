@@ -55,7 +55,7 @@ jobs:
       - name: Install Linux dependencies
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - run: npm ci
-      - run: npm run build -- --webpack
+      - run: npm run build
       - name: Build Tauri Linux
         run: npx tauri build
       - name: Rename artifacts
@@ -121,7 +121,7 @@ jobs:
           java-version: 21
       - uses: android-actions/setup-android@v3
       - run: npm ci
-      - run: npm run build -- --webpack
+      - run: npm run build
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build debug APK
