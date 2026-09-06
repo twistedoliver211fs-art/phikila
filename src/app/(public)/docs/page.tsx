@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Aurora } from "@/components/landing/aurora";
 
 export const metadata: Metadata = {
   title: "Documentation — Phikila",
@@ -9,8 +10,10 @@ export const metadata: Metadata = {
 
 export default function DocsPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-20 sm:py-28">
-      <div className="text-center mb-12">
+    <div className="relative isolate overflow-hidden bg-gradient-to-b from-primary/[0.04] via-muted/40 to-background">
+      <Aurora className="opacity-60" />
+      <div className="relative mx-auto max-w-4xl px-4 py-12 sm:py-20 sm:px-6">
+      <div className="text-center mb-10 sm:mb-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Documentation
         </h1>
@@ -160,18 +163,19 @@ export default function DocsPage() {
       </div>
 
       {/* Request Demo CTA */}
-      <div className="mt-12 text-center">
+      <div className="mt-10 sm:mt-12 text-center">
         <p className="text-muted-foreground">
           Ready to see Phikila in action?
         </p>
         <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/demo">
-            <Button size="lg">Request a Demo</Button>
+            <Button size="lg" className="h-12 text-base">Request a Demo</Button>
           </Link>
           <Link href="/login">
-            <Button variant="outline" size="lg">Sign In</Button>
+            <Button variant="outline" size="lg" className="h-12 text-base">Sign In</Button>
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

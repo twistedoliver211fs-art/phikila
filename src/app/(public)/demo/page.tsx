@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Mail, Calendar, ExternalLink } from "lucide-react";
+import { CONTACTS } from "@/lib/contacts";
 
 export default function DemoPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -61,7 +62,7 @@ export default function DemoPage() {
 
             <div className="mt-6 space-y-3">
               <a
-                href="https://phikila-app.vercel.app/login"
+                href="/login"
                 className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -82,10 +83,12 @@ export default function DemoPage() {
               <p className="text-xs text-white/60">
                 Didn&apos;t receive the email? Check your spam folder or{" "}
                 <a
-                  href="https://wa.me/254768214649"
+                  href={CONTACTS.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  WhatsApp us
+                  WhatsApp {CONTACTS.phoneInternational}
                 </a>
               </p>
             </div>
@@ -257,7 +260,11 @@ export default function DemoPage() {
               />
             </div>
 
-            <Button type="submit" disabled={submitting} className="w-full">
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-12 text-base"
+            >
               {submitting ? "Submitting..." : "Get Demo Access"}
             </Button>
           </form>

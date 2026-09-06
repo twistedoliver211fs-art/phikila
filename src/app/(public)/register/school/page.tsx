@@ -257,34 +257,34 @@ export default function RegisterSchoolPage() {
               <p className="text-sm text-white/70">Review your school details before registering.</p>
 
               <div className="rounded-lg border border-white/20 bg-white/5 p-4 space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-white/60">School Name</span>
-                  <span className="text-sm font-medium text-white">{form.name || "—"}</span>
+                <div className="flex justify-between gap-3">
+                  <span className="text-sm shrink-0 text-white/60">School Name</span>
+                  <span className="text-sm font-medium text-right break-words min-w-0 text-white">{form.name || "—"}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-white/60">Type</span>
-                  <span className="text-sm font-medium text-white capitalize">{form.schoolType}</span>
+                <div className="flex justify-between gap-3">
+                  <span className="text-sm shrink-0 text-white/60">Type</span>
+                  <span className="text-sm font-medium text-right text-white capitalize">{form.schoolType}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-white/60">Education Level</span>
-                  <span className="text-sm font-medium text-white capitalize">{form.educationLevel.replace("_", " & ")}</span>
+                <div className="flex justify-between gap-3">
+                  <span className="text-sm shrink-0 text-white/60">Education Level</span>
+                  <span className="text-sm font-medium text-right text-white capitalize">{form.educationLevel.replace("_", " & ")}</span>
                 </div>
                 {form.phone && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-white/60">Phone</span>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-sm shrink-0 text-white/60">Phone</span>
                     <span className="text-sm font-medium text-white">{form.phone}</span>
                   </div>
                 )}
                 {form.email && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-white/60">Email</span>
-                    <span className="text-sm font-medium text-white">{form.email}</span>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-sm shrink-0 text-white/60">Email</span>
+                    <span className="text-sm font-medium text-right break-words min-w-0 text-white">{form.email}</span>
                   </div>
                 )}
                 {form.address && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-white/60">Address</span>
-                    <span className="text-sm font-medium text-white">{form.address}</span>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-sm shrink-0 text-white/60">Address</span>
+                    <span className="text-sm font-medium text-right break-words min-w-0 text-white">{form.address}</span>
                   </div>
                 )}
               </div>
