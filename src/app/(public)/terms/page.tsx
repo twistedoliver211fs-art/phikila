@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
   title: "Terms of Service — Phikila",
@@ -79,8 +80,17 @@ export default function TermsPage() {
           </h2>
           <p>
             For questions about these terms, contact us at{" "}
-            <a href="mailto:omixsystems@gmail.com" className="text-primary hover:underline">
-              omixsystems@gmail.com
+            <a href={CONTACTS.mailto} className="text-primary hover:underline">
+              {CONTACTS.email}
+            </a>{" "}
+            or WhatsApp us at{" "}
+            <a
+              href={CONTACTS.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {CONTACTS.phoneInternational}
             </a>
             .
           </p>

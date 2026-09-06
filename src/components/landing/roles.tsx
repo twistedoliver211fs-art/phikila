@@ -17,6 +17,7 @@ import {
   staggerItem,
   fadeUp,
 } from "./motion";
+import { Aurora } from "./aurora";
 
 const offlineCapabilities = [
   "Attendance",
@@ -102,7 +103,8 @@ export function Roles() {
   return (
     <>
       {/* Offline Section */}
-      <section className="py-20 sm:py-28 bg-muted/30">
+      <section className="relative isolate overflow-hidden bg-gradient-to-b from-primary/[0.04] via-muted/40 to-background py-20 sm:py-28">
+        <Aurora className="opacity-60" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection variants={fadeUp}>
             <div className="max-w-2xl">
@@ -135,7 +137,10 @@ export function Roles() {
                   duration: 0.4,
                   ease: "easeOut",
                 }}
-                className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium ${step.color}`}
+                className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium ${
+                  // Arrow chips are noise once the flow wraps on narrow screens.
+                  step.label === "→" ? "hidden sm:flex" : step.color
+                }`}
               >
                 {step.icon && <step.icon className="h-4 w-4" />}
                 <span>{step.label}</span>
@@ -156,7 +161,8 @@ export function Roles() {
       </section>
 
       {/* Roles Section */}
-      <section id="roles" className="py-20 sm:py-28">
+      <section id="roles" className="relative isolate overflow-hidden bg-gradient-to-b from-background via-background to-primary/[0.04] py-20 sm:py-28">
+        <Aurora className="opacity-50" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection variants={fadeUp}>
             <div className="max-w-2xl">
@@ -173,11 +179,14 @@ export function Roles() {
             </div>
           </AnimatedSection>
 
-          <StaggerGrid className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StaggerGrid className="mt-12 grid grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* 2-up on phones, 5-up on desktop; card 5 spans full width on mobile */}
             {roles.map((item) => (
               <StaggerItem key={item.role}>
                 <div
-                  className={`group rounded-xl border bg-gradient-to-b p-5 ${item.color} transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10`}
+                  className={`group rounded-xl border bg-gradient-to-b p-5 ${item.color} transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10 ${
+                    item.role === "Parent" ? "col-span-2 lg:col-span-1" : ""
+                  }`}
                 >
                   <h3 className="text-base font-semibold text-foreground">
                     {item.role}
@@ -192,16 +201,17 @@ export function Roles() {
         </div>
       </section>
 
-      {/* Communication Section */}
-      <section className="py-20 sm:py-28 bg-muted/30">
+      {/* Communication + Trust — one band (less scroll on mobile) */}
+      <section className="relative isolate overflow-hidden bg-gradient-to-b from-primary/[0.04] via-muted/40 to-success/[0.05] py-20 sm:py-28">
+        <Aurora className="opacity-60" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection variants={fadeUp}>
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">
-                Communication
+                Communication &amp; Trust
               </p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-                Keep everyone connected
+                Keep everyone connected. Keep everything protected.
               </h2>
             </div>
           </AnimatedSection>
@@ -228,32 +238,24 @@ export function Roles() {
               </StaggerItem>
             ))}
           </StaggerGrid>
-        </div>
-      </section>
 
-      {/* Trust Section */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <AnimatedSection variants={fadeUp}>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              Built for responsible school management
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          {/* Trust chips — continuation of the same band */}
+          <div className="mt-12 border-t border-border/60 pt-8 text-center">
+            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground">
               Role-based access, audit trails, secure authentication, and safe
               synchronization — so your school data stays protected.
             </p>
-          </AnimatedSection>
-
-          <StaggerGrid className="mt-10 flex flex-wrap justify-center gap-4" amount={0.3}>
-            {trustFeatures.map((feature) => (
-              <StaggerItem key={feature}>
-                <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-medium text-foreground hover:border-primary/30 hover:shadow-sm transition-all duration-200">
-                  <CheckCircle className="h-4 w-4 text-success" />
-                  {feature}
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerGrid>
+            <StaggerGrid className="mt-6 flex flex-wrap justify-center gap-3 sm:gap-4" amount={0.3}>
+              {trustFeatures.map((feature) => (
+                <StaggerItem key={feature}>
+                  <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-all duration-200 hover:border-primary/30 hover:shadow-sm sm:px-5 sm:py-3">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    {feature}
+                  </div>
+                </StaggerItem>
+              ))}
+            </StaggerGrid>
+          </div>
         </div>
       </section>
     </>

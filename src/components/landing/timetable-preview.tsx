@@ -11,6 +11,7 @@ import {
 } from "./motion";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { Aurora } from "./aurora";
 
 export function TimetablePreview() {
   const days = ["MON", "TUE", "WED", "THU", "FRI"];
@@ -25,7 +26,11 @@ export function TimetablePreview() {
   const gridInView = useInView(gridRef, { once: true, amount: 0.15 });
 
   return (
-    <section id="timetable" className="py-20 sm:py-28">
+    <section
+      id="timetable"
+      className="relative isolate overflow-hidden bg-gradient-to-b from-background via-primary/[0.04] to-background py-20 sm:py-28"
+    >
+      <Aurora className="opacity-60" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection variants={fadeUp}>
           <div className="max-w-2xl">
@@ -46,17 +51,26 @@ export function TimetablePreview() {
           <div className="mt-12 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
             {/* Timetable Grid */}
             <div ref={gridRef} className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="w-20 px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
+                    <th className="w-14 px-2 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:w-20 sm:px-4">
+                      <span className="sm:hidden" aria-hidden>
+                        …
+                      </span>
+                      <span className="sr-only">Time</span>
+                    </th>
                     {days.map((day, i) => (
                       <motion.th
                         key={day}
                         initial={{ opacity: 0, y: -10 }}
                         animate={gridInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ delay: 0.2 + i * 0.05 }}
-                        className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                        className={
+                          i >= 3
+                            ? "hidden px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:table-cell"
+                            : "px-2 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider sm:px-4"
+                        }
                       >
                         {day}
                       </motion.th>
@@ -69,7 +83,7 @@ export function TimetablePreview() {
                       key={period.time}
                       className="border-b border-border/50 last:border-0"
                     >
-                      <td className="px-4 py-3 text-xs font-medium text-muted-foreground">
+                      <td className="px-2 py-3 text-xs font-medium text-muted-foreground sm:px-4">
                         {period.time}
                       </td>
                       {period.slots.map((subject, si) => {
@@ -88,7 +102,7 @@ export function TimetablePreview() {
                               duration: 0.35,
                               ease: "easeOut",
                             }}
-                            className="px-2 py-2"
+                            className={si >= 3 ? "hidden sm:table-cell" : "px-1 py-2 sm:px-2"}
                           >
                             <div
                               className={`rounded-md px-3 py-2 text-center text-sm font-medium transition-all duration-300 ${
@@ -123,6 +137,9 @@ export function TimetablePreview() {
                   </p>
                   <p className="mt-1 text-sm text-red-700">
                     Mr. Kamau is assigned to two lessons at 10:00 on Thursday.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                    Showing Mon–Wed — open on a larger screen to see the full week.
                   </p>
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}

@@ -20,17 +20,17 @@ export function Hero() {
 
   return (
     <section className="relative isolate overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
-      {/* Aurora + grid pattern */}
+      {/* Aurora + grid pattern (grid hidden on small screens to cut noise) */}
       <Aurora />
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+        <div className="absolute inset-0 hidden bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:40px_40px] sm:block" />
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
       </div>
 
       {/* Hero Content */}
       <div
         ref={heroRef}
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36"
+        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20 lg:px-8 lg:py-28"
       >
         <motion.div
           variants={staggerContainer}

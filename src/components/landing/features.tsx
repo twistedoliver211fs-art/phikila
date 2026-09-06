@@ -14,6 +14,7 @@ import {
   StaggerItem,
   fadeUp,
 } from "./motion";
+import { Aurora } from "./aurora";
 
 const features = [
   {
@@ -54,7 +55,11 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-20 sm:py-28 bg-muted/30">
+    <section
+      id="features"
+      className="relative isolate overflow-hidden bg-gradient-to-b from-primary/[0.04] via-muted/40 to-background py-20 sm:py-28"
+    >
+      <Aurora className="opacity-70" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection variants={fadeUp}>
           <div className="max-w-2xl">

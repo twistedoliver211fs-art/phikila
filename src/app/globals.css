@@ -229,3 +229,15 @@
     animation: none;
   }
 }
+
+/* Mobile: cut blur radius and keep one blob per section — 3 large
+   blurred layers × ~7 sections is too much for low-end phone GPUs. */
+@media (max-width: 640px) {
+  .aurora-blob {
+    filter: blur(60px);
+  }
+  .aurora-blob-2,
+  .aurora-blob-3 {
+    display: none;
+  }
+}

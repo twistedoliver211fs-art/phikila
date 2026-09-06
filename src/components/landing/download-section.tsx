@@ -1,48 +1,88 @@
 import Link from "next/link";
+import { ArrowRight, Download, Globe, Monitor, ShieldCheck, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Download, Smartphone, Monitor, Shield } from "lucide-react";
+import { AnimatedSection, StaggerGrid, StaggerItem, fadeUp } from "./motion";
+import { Aurora } from "./aurora";
+import { RELEASE, WEB_APP_URL } from "@/lib/releases";
+
+const channels = [
+  {
+    icon: Smartphone,
+    title: "Android",
+    description: "Native APK with offline-first sync",
+  },
+  {
+    icon: Monitor,
+    title: "Desktop",
+    description: "Windows installer · Linux .deb / AppImage",
+  },
+  {
+    icon: Globe,
+    title: "Web App",
+    description: "Installable PWA — works on macOS & iOS too",
+  },
+];
 
 export function DownloadSection() {
   return (
-    <section className="py-24 border-t border-border">
-      <div className="mx-auto max-w-4xl px-4 text-center">
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Take Phikila Everywhere
-        </h2>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Install on any device — phone, tablet, or computer. Offline support included.
-        </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
-          <div className="rounded-xl border border-border bg-card p-6">
-            <Smartphone className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground">Mobile</h3>
-            <p className="text-sm text-muted-foreground mt-1">Android APK with native features</p>
+    <section className="relative isolate overflow-hidden border-t border-border bg-gradient-to-b from-primary/[0.05] via-background to-primary/[0.04] py-24">
+      <Aurora className="opacity-70" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <AnimatedSection variants={fadeUp}>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+              Install Phikila
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+              Take Phikila everywhere
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+              Install on any device — phone, tablet, or computer. Offline
+              support included, verified downloads, no app store required.
+            </p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-6">
-            <Monitor className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground">Desktop</h3>
-            <p className="text-sm text-muted-foreground mt-1">Windows, Linux, macOS</p>
+        </AnimatedSection>
+
+        <StaggerGrid className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-3">
+          {channels.map((channel) => (
+            <StaggerItem key={channel.title}>
+              <div className="h-full rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+                <channel.icon className="mx-auto h-8 w-8 text-primary" />
+                <h3 className="mt-3 text-center font-semibold text-foreground">
+                  {channel.title}
+                </h3>
+                <p className="mt-1 text-center text-sm leading-relaxed text-muted-foreground">
+                  {channel.description}
+                </p>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerGrid>
+
+        <AnimatedSection variants={fadeUp} delay={0.15}>
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/download">
+              <Button size="lg" className="text-base">
+                <Download />
+                Download Phikila
+              </Button>
+            </Link>
+            <a href={WEB_APP_URL} target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="text-base">
+                <Globe />
+                Open the Web App
+                <ArrowRight />
+              </Button>
+            </a>
           </div>
-          <div className="rounded-xl border border-border bg-card p-6">
-            <Shield className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground">PWA</h3>
-            <p className="text-sm text-muted-foreground mt-1">Install from any browser</p>
-          </div>
-        </div>
-        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/download">
-            <Button size="lg" className="text-base px-8">
-              <Download className="h-5 w-5 mr-2" />
-              Download Phikila
-            </Button>
-          </Link>
-          <Link href="/security">
-            <Button variant="outline" size="lg" className="text-base px-8">
-              <Shield className="h-5 w-5 mr-2" />
-              Security
-            </Button>
-          </Link>
-        </div>
+          <p className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs text-muted-foreground">
+            <ShieldCheck className="h-3.5 w-3.5 text-success" />
+            <span>
+              v{RELEASE.version} · SHA-256 verified · Built by{" "}
+              {RELEASE.publisher.name}
+            </span>
+          </p>
+        </AnimatedSection>
       </div>
     </section>
   );

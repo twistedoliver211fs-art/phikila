@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { CONTACTS } from "@/lib/contacts";
+import { SiteHeader } from "@/components/public/site-header";
 
 export default function PublicLayout({
   children,
@@ -10,48 +12,7 @@ export default function PublicLayout({
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/logo.jpeg"
-              alt="Phikila"
-              width={28}
-              height={28}
-              className="rounded-md"
-            />
-            <span className="text-base font-bold tracking-tight">Phikila</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Home
-            </Link>
-            <Link href="/download" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Download
-            </Link>
-            <Link href="/security" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Security
-            </Link>
-            <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Documentation
-            </Link>
-            <Link href="/privacy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Terms
-            </Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link href="/login">
-              <Button size="sm">Register your School</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Content */}
       <main className="flex-1 relative">
@@ -79,12 +40,16 @@ export default function PublicLayout({
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
                 Built by{" "}
-                <a href="https://omixsystems.store" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-                  Omix Digital Solutions
+                <a href={CONTACTS.website} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  {CONTACTS.publisher}
                 </a>{" "}
                 &middot;{" "}
-                <a href="mailto:omixsystems@gmail.com" className="underline hover:text-foreground">
-                  omixsystems@gmail.com
+                <a href={CONTACTS.whatsapp} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                  WhatsApp {CONTACTS.phoneInternational}
+                </a>{" "}
+                &middot;{" "}
+                <a href={CONTACTS.mailto} className="underline hover:text-foreground">
+                  {CONTACTS.email}
                 </a>
               </p>
             </div>
@@ -110,7 +75,8 @@ export default function PublicLayout({
               <h3 className="text-sm font-semibold text-foreground">Support</h3>
               <ul className="mt-3 space-y-2">
                 <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Documentation</Link></li>
-                <li><a href="https://wa.me/254768214649" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">WhatsApp Us</a></li>
+                <li><a href={CONTACTS.whatsapp} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">WhatsApp {CONTACTS.phoneInternational}</a></li>
+                <li><a href={CONTACTS.mailto} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">{CONTACTS.email}</a></li>
               </ul>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Phikila",
@@ -74,8 +75,17 @@ export default function PrivacyPage() {
           </h2>
           <p>
             For privacy-related inquiries, contact us at{" "}
-            <a href="mailto:omixsystems@gmail.com" className="text-primary hover:underline">
-              omixsystems@gmail.com
+            <a href={CONTACTS.mailto} className="text-primary hover:underline">
+              {CONTACTS.email}
+            </a>{" "}
+            or WhatsApp us at{" "}
+            <a
+              href={CONTACTS.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {CONTACTS.phoneInternational}
             </a>
             .
           </p>

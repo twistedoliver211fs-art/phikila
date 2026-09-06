@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Shield, Lock, Eye, Key, FileCheck, AlertTriangle, Mail } from "lucide-react";
+import { Shield, Lock, Eye, Key, FileCheck, AlertTriangle, Mail, MessageCircle } from "lucide-react";
+import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
   title: "Security — Phikila",
@@ -110,7 +111,7 @@ export default function SecurityPage() {
             <p><strong className="text-foreground">Sub-processors:</strong> Supabase (database hosting), Vercel (app hosting), Google (authentication). All sub-processors are GDPR compliant.</p>
             <p><strong className="text-foreground">Data Deletion:</strong> Schools can request complete data deletion at any time. Data is permanently removed within 30 days of request.</p>
             <p><strong className="text-foreground">Data Export:</strong> Schools can export all their data in standard formats (CSV, JSON) at any time.</p>
-            <p><strong className="text-foreground">DPA Contact:</strong> For a full Data Processing Agreement, contact <a href="mailto:legal@phikila.app" className="text-primary hover:underline">legal@phikila.app</a>.</p>
+            <p><strong className="text-foreground">DPA Contact:</strong> For a full Data Processing Agreement, contact <a href={CONTACTS.mailto} className="text-primary hover:underline">{CONTACTS.email}</a> or WhatsApp <a href={CONTACTS.whatsapp} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{CONTACTS.phoneInternational}</a>.</p>
           </div>
         </section>
 
@@ -122,12 +123,17 @@ export default function SecurityPage() {
           </div>
           <div className="text-sm text-muted-foreground">
             <p>If you discover a security vulnerability, please report it responsibly to:</p>
-            <p className="mt-2">
-              <a href="mailto:security@phikila.app" className="text-primary hover:underline font-medium">
-                security@phikila.app
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <a href={CONTACTS.mailto} className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 font-medium text-foreground transition-colors hover:bg-muted">
+                <Mail className="h-4 w-4 text-primary" />
+                {CONTACTS.email}
               </a>
-            </p>
-            <p className="mt-2">We respond to security reports within 48 hours and aim to resolve confirmed vulnerabilities within 72 hours.</p>
+              <a href={CONTACTS.whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 font-medium text-foreground transition-colors hover:bg-muted">
+                <MessageCircle className="h-4 w-4 text-success" />
+                {CONTACTS.phoneInternational}
+              </a>
+            </div>
+            <p className="mt-2">Security reports and general inquiries share one inbox — mention “security” in the subject line. We respond within 48 hours and aim to resolve confirmed vulnerabilities within 72 hours.</p>
           </div>
         </section>
       </div>
