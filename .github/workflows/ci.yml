@@ -130,6 +130,9 @@ jobs:
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > /tmp/phikila-release.jks
+            echo "Keystore decoded, size: $(wc -c < /tmp/phikila-release.jks) bytes"
+          else
+            echo "No keystore secret found, skipping signing"
           fi
       - name: Create key.properties
         env:
@@ -138,13 +141,13 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           if [ -f /tmp/phikila-release.jks ]; then
-            cat > android/key.properties << EOF
-          storePassword=$KEYSTORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=/tmp/phikila-release.jks
-          EOF
-            sed -i 's/^[[:space:]]*//' android/key.properties
+            echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=/tmp/phikila-release.jks" >> android/key.properties
+            echo "key.properties created"
+          else
+            echo "No keystore found, skipping key.properties"
           fi
       - name: Build debug APK
         run: cd android && ./gradlew assembleDebug
