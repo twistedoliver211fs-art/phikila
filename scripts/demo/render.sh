@@ -1,6 +1,6 @@
 #!/bin/bash
 # FFmpeg Render Pipeline for Phikila Demo Video
-# Combines Playwright frames + TTS audio + captions into final 1080p video
+# Combines Playwright recorded video + TTS audio + captions into final 1080p video
 #
 # Usage: bash scripts/demo/render.sh
 
@@ -8,7 +8,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT_DIR="$SCRIPT_DIR/output"
-FRAMES_DIR="$OUTPUT_DIR/frames"
 AUDIO_DIR="$OUTPUT_DIR/audio"
 CAPTIONS="$OUTPUT_DIR/captions.srt"
 TIMELINE="$OUTPUT_DIR/timeline.json"
@@ -29,14 +28,14 @@ echo "================================"
 command -v ffmpeg >/dev/null 2>&1 || { echo "❌ ffmpeg not found"; exit 1; }
 command -v ffprobe >/dev/null 2>&1 || { echo "❌ ffprobe not found"; exit 1; }
 
-# Check if frames exist
-FRAME_COUNT=$(ls "$FRAMES_DIR"/*.png 2>/dev/null | wc -l)
-if [ "$FRAME_COUNT" -eq 0 ]; then
-    echo "❌ No frames found in $FRAMES_DIR"
+# Check if Playwright recorded video exists
+RECORDED_VIDEO=$(ls "$OUTPUT_DIR"/*.webm 2>/dev/null | head -1)
+if [ -z "$RECORDED_VIDEO" ]; then
+    echo "❌ No recorded video found in $OUTPUT_DIR"
     echo "   Run: npx tsx scripts/demo/record.ts first"
     exit 1
 fi
-echo "📸 Found $FRAME_COUNT frames"
+echo "📹 Found recorded video: $(basename "$RECORDED_VIDEO")"
 
 # Check if audio exists
 AUDIO_COUNT=$(ls "$AUDIO_DIR"/*.mp3 2>/dev/null | wc -l)
@@ -47,20 +46,20 @@ if [ "$AUDIO_COUNT" -eq 0 ]; then
 fi
 echo "🔊 Found $AUDIO_COUNT audio files"
 
-# Step 1: Create video from frames
+# Step 1: Convert Playwright video to MP4 and normalize
 echo ""
-echo "📹 Step 1: Creating video from frames..."
+echo "📹 Step 1: Converting recorded video to MP4..."
 ffmpeg -y \
-  -framerate "$FPS" \
-  -i "$FRAMES_DIR/frame_%06d.png" \
+  -i "$RECORDED_VIDEO" \
   -c:v libx264 \
   -pix_fmt yuv420p \
   -s "${WIDTH}x${HEIGHT}" \
   -r "$FPS" \
+  -an \
   "$OUTPUT_DIR/video_only.mp4" \
   2>/dev/null
 
-echo "   ✅ Video created"
+echo "   ✅ Video converted"
 
 # Step 2: Concatenate audio files
 echo ""
@@ -69,7 +68,10 @@ AUDIO_LIST="$OUTPUT_DIR/audio_list.txt"
 > "$AUDIO_LIST"
 
 for scene in $(jq -r '.[].id' "$TIMELINE"); do
-  echo "file '$AUDIO_DIR/$scene.mp3'" >> "$AUDIO_LIST"
+  AUDIO_FILE="$AUDIO_DIR/$scene.mp3"
+  if [ -f "$AUDIO_FILE" ]; then
+    echo "file '$AUDIO_FILE'" >> "$AUDIO_LIST"
+  fi
 done
 
 ffmpeg -y \
@@ -122,19 +124,23 @@ echo ""
 echo "✨ Step 5: Adding fade effects..."
 DURATION=$(ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$FINAL_OUTPUT" 2>/dev/null | cut -d. -f1)
 
-ffmpeg -y \
-  -i "$FINAL_OUTPUT" \
-  -vf "fade=t=in:st=0:d=1,fade=t=out:st=$((DURATION-2)):d=2" \
-  -af "afade=t=in:st=0:d=1,afade=t=out:st=$((DURATION-2)):d=2" \
-  -c:v libx264 \
-  -preset medium \
-  -crf 23 \
-  -c:a aac \
-  "$OUTPUT_DIR/phikila-demo-final.mp4" \
-  2>/dev/null
+if [ -n "$DURATION" ] && [ "$DURATION" -gt 3 ]; then
+  ffmpeg -y \
+    -i "$FINAL_OUTPUT" \
+    -vf "fade=t=in:st=0:d=1,fade=t=out:st=$((DURATION-2)):d=2" \
+    -af "afade=t=in:st=0:d=1,afade=t=out:st=$((DURATION-2)):d=2" \
+    -c:v libx264 \
+    -preset medium \
+    -crf 23 \
+    -c:a aac \
+    "$OUTPUT_DIR/phikila-demo-final.mp4" \
+    2>/dev/null
 
-mv "$OUTPUT_DIR/phikila-demo-final.mp4" "$FINAL_OUTPUT"
-echo "   ✅ Fade effects applied"
+  mv "$OUTPUT_DIR/phikila-demo-final.mp4" "$FINAL_OUTPUT"
+  echo "   ✅ Fade effects applied"
+else
+  echo "   ⚠️  Video too short for fades, skipping"
+fi
 
 # Step 6: Generate thumbnail
 echo ""
