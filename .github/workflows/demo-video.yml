@@ -146,6 +146,7 @@ jobs:
           EOF
 
       - name: Update landing page video URL
+        continue-on-error: true
         run: |
           if [ -n "${VIDEO_URL:-}" ]; then
             echo "Updating landing page with video URL: $VIDEO_URL"
@@ -167,7 +168,9 @@ jobs:
               echo "No changes to demo-config.json"
             else
               git commit -m "chore: update demo video URL [skip ci]"
-              git push --force-with-lease origin main
+              git fetch origin main
+              git rebase origin/main
+              git push origin main
             fi
           fi
 
