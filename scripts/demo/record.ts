@@ -6,7 +6,7 @@
  * Requires: PLAYWRIGHT_BASE_URL env var (default: http://localhost:3000)
  */
 
-import { chromium } from "playwright";
+import { chromium } from "playwright-core";
 import * as fs from "fs";
 import * as path from "path";
 
