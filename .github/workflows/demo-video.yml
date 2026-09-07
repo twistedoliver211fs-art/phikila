@@ -143,15 +143,16 @@ jobs:
         run: |
           if [ -n "${VIDEO_URL:-}" ]; then
             echo "Updating landing page with video URL: $VIDEO_URL"
-            # The landing page reads from public/demo-config.json
-            cat > public/demo-config.json << EOF
-            {
-              "videoUrl": "${VIDEO_URL}",
-              "thumbnailUrl": "${THUMB_URL}",
-              "updatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-              "version": "$(date +%Y%m%d%H%M)"
-            }
-            EOF
+            UPDATED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            VERSION=$(date +%Y%m%d%H%M)
+            cat > public/demo-config.json <<OUTER
+          {
+            "videoUrl": "${VIDEO_URL}",
+            "thumbnailUrl": "${THUMB_URL}",
+            "updatedAt": "${UPDATED}",
+            "version": "${VERSION}"
+          }
+          OUTER
             
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
