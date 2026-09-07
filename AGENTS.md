@@ -215,6 +215,49 @@ Generates: PWA icons, maskable icons, favicon.ico, Tauri icons, shortcut icons.
 
 ---
 
+## Demo Video Pipeline
+
+Automated video generation that runs on every push to `main`.
+
+### How it works:
+1. **GitHub Actions** triggers on push to `main`
+2. **Supabase** — resets demo school data, re-seeds fresh sample data
+3. **Next.js** — builds and starts the app
+4. **Playwright** — records 1920x1080 video navigating through the app
+5. **Edge-TTS** — generates narration audio (en-US-JennyNeural voice)
+6. **FFmpeg** — combines video + audio + burned-in captions + fade effects
+7. **Wrangler** — uploads final video + thumbnail to Cloudflare R2
+8. **Landing page** — reads `public/demo-config.json` and shows the video
+
+### Files:
+```
+scripts/demo/
+├── narration.json      # Scene definitions + narration text
+├── record.ts           # Playwright recording script
+├── generate-tts.py     # TTS audio generation (edge-tts)
+├── render.sh           # FFmpeg render pipeline
+├── upload-r2.sh        # R2 upload via wrangler
+└── build-video.sh      # Full orchestrator (runs all steps)
+```
+
+### To edit the demo:
+- Change narration: edit `scripts/demo/narration.json`
+- Change scenes: modify `record.ts`
+- Change voice: edit `generate-tts.py` (VOICE variable)
+
+### Required GitHub Secrets:
+| Secret | Description |
+|--------|-------------|
+| `SUPABASE_DB_PASSWORD` | Database password for SQL resets |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
+| `CLOUDFLARE_R2_TOKEN` | R2 API token with write access |
+
+### Required R2 Bucket:
+- Bucket name: `phikila-demo`
+- Public access enabled (r2.dev subdomain)
+
+---
+
 ## CI/CD Secrets Required
 
 ### Via gh CLI (recommended):
