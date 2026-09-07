@@ -8,6 +8,7 @@ on:
       - 'public/**'
       - 'supabase/**'
       - 'scripts/demo/**'
+      - '.github/workflows/demo-video.yml'
   workflow_dispatch:
 
 env:
