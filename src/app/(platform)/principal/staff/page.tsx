@@ -40,6 +40,7 @@ export default function PrincipalStaffPage() {
   const [loading, setLoading] = useState(true);
   const [schoolId, setSchoolId] = useState<string | null>(null);
   const [assigningRole, setAssigningRole] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const supabase = createClient();
@@ -109,7 +110,13 @@ export default function PrincipalStaffPage() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input type="text" placeholder="Search staff..." className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+        <input
+          type="text"
+          placeholder="Search staff..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        />
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -128,7 +135,12 @@ export default function PrincipalStaffPage() {
               {loading ? (
                 <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Loading...</td></tr>
               ) : staff.length > 0 ? (
-                staff.map((s) => {
+                staff
+                  .filter((s) => {
+                    const q = search.toLowerCase();
+                    return !q || s.first_name.toLowerCase().includes(q) || s.last_name.toLowerCase().includes(q) || s.employee_number?.toLowerCase().includes(q);
+                  })
+                  .map((s) => {
                   const memberRole = s.school_members?.[0]?.role ?? s.role;
                   return (
                     <tr key={s.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">

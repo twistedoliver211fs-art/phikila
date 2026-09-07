@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { rateLimit } from "@/lib/rate-limit";
 
 const DEMO_CREDENTIALS = {
   email: "demo@phikila.app",
@@ -93,6 +94,14 @@ function buildEmailHtml(name: string, schoolName: string) {
 }
 
 export async function POST(request: Request) {
+  const rl = rateLimit(request, { maxRequests: 3, windowMs: 300_000, prefix: "demo-request" });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many demo requests. Please try again in 5 minutes." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const { name, email, phone, school, role, message } = body;

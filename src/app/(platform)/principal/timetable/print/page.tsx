@@ -62,6 +62,8 @@ export default function PrintTimetablesPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [slots, setSlots] = useState<TimetableSlot[]>([]);
   const [subjectColors, setSubjectColors] = useState<SubjectColor[]>([]);
+  const [schoolName, setSchoolName] = useState("School");
+  const [termName, setTermName] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,6 +87,7 @@ export default function PrintTimetablesPage() {
             staffRes,
             slotsRes,
             colorsRes,
+            schoolRes,
           ] = await Promise.all([
             supabase
               .from("periods")
@@ -112,7 +115,30 @@ export default function PrintTimetablesPage() {
               .from("subject_colors")
               .select("subject_id, color")
               .eq("school_id", sm.school_id),
+            supabase
+              .from("schools")
+              .select("name")
+              .eq("id", sm.school_id)
+              .single(),
           ]);
+
+          const { data: currentYear } = await supabase
+            .from("academic_years")
+            .select("id")
+            .eq("school_id", sm.school_id)
+            .eq("is_current", true)
+            .single();
+
+          let termName = "";
+          if (currentYear) {
+            const { data: currentTerm } = await supabase
+              .from("terms")
+              .select("name")
+              .eq("academic_year_id", currentYear.id)
+              .eq("is_current", true)
+              .single();
+            termName = currentTerm?.name ?? "";
+          }
 
           setPeriods(periodsRes.data ?? []);
           setClasses(classesRes.data ?? []);
@@ -120,6 +146,8 @@ export default function PrintTimetablesPage() {
           setStaff(staffRes.data ?? []);
           setSlots(slotsRes.data ?? []);
           setSubjectColors(colorsRes.data ?? []);
+          if (schoolRes.data) setSchoolName(schoolRes.data.name);
+          if (termName) setTermName(termName);
           setLoading(false);
         });
     });
@@ -184,7 +212,7 @@ export default function PrintTimetablesPage() {
     const XLSX = await import("xlsx");
     const data: (string | number)[][] = [
       [
-        "PHIKILA SCHOOL",
+        schoolName,
         "",
         "",
         "",
@@ -518,18 +546,20 @@ export default function PrintTimetablesPage() {
                   {/* School header */}
                   <div className="text-center py-6 border-b border-border print:border-gray-800">
                     <h2 className="text-2xl font-bold text-foreground print:text-gray-900">
-                      PHIKILA SCHOOL
+                      {schoolName}
                     </h2>
                     <p className="text-sm italic text-muted-foreground print:text-gray-600 mt-1">
-                      &quot;Excellence in Education&quot;
+                      School Timetable
                     </p>
                     <div className="mt-4">
                       <h3 className="text-lg font-semibold text-foreground print:text-gray-900">
                         TIMETABLE — {item.label.toUpperCase()}
                       </h3>
-                      <p className="text-sm text-muted-foreground print:text-gray-600">
-                        Term 2, 2026
-                      </p>
+                      {termName && (
+                        <p className="text-sm text-muted-foreground print:text-gray-600">
+                          {termName}
+                        </p>
+                      )}
                     </div>
                   </div>
 

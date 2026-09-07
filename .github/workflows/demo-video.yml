@@ -22,6 +22,13 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+    env:
+      # Supabase project constants (anon key is public by design; consolidated here for maintainability)
+      SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      DEMO_EMAIL: demo@phikila.app
+      DEMO_PASSWORD: Demo1234!
     
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +45,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          sudo apt-get install -y -qq ffmpeg postgresql-client jq
           pip install edge-tts
 
       - run: npm ci
@@ -78,16 +85,13 @@ jobs:
           psql "$DB_URL" -f supabase/seed-demo.sql || echo "Seed had warnings, continuing..."
 
       - name: Ensure demo user exists in Supabase Auth
-        env:
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           # Delete existing demo user if present (ignore errors)
           echo "Cleaning up existing demo user..."
           EXISTING=$(curl -s \
-            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users?email=demo@phikila.app")
+            "$SUPABASE_URL/auth/v1/admin/users?email=$DEMO_EMAIL")
           
           EXISTING_ID=$(echo "$EXISTING" | python3 -c "
           import sys,json
@@ -104,64 +108,90 @@ jobs:
           if [ -n "$EXISTING_ID" ]; then
             echo "Found existing demo user: $EXISTING_ID, deleting..."
             curl -s -X DELETE \
-              -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
               -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-              "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users/$EXISTING_ID" || true
+              "$SUPABASE_URL/auth/v1/admin/users/$EXISTING_ID" || true
           fi
           
           echo "Creating demo user with email/password..."
           CREATE_RESPONSE=$(curl -s -X POST \
-            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"email":"demo@phikila.app","password":"Demo1234!","email_confirm":true}' \
-            "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users")
+            -d "{\"email\":\"$DEMO_EMAIL\",\"password\":\"$DEMO_PASSWORD\",\"email_confirm\":true}" \
+            "$SUPABASE_URL/auth/v1/admin/users")
           echo "Create response: $(echo "$CREATE_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id','') or d.get('msg','error'))" 2>/dev/null || echo "$CREATE_RESPONSE")"
           
           echo "Verifying auth works..."
           AUTH_RESPONSE=$(curl -s -X POST \
-            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"email":"demo@phikila.app","password":"Demo1234!"}' \
-            "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/token?grant_type=password")
+            -d "{\"email\":\"$DEMO_EMAIL\",\"password\":\"$DEMO_PASSWORD\"}" \
+            "$SUPABASE_URL/auth/v1/token?grant_type=password")
           echo "Auth response: $(echo "$AUTH_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if 'access_token' in d else d)" 2>/dev/null || echo "$AUTH_RESPONSE")"
 
       - name: Build and start app
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
+          NEXT_PUBLIC_SUPABASE_URL: $SUPABASE_URL
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
           NEXT_PUBLIC_SITE_URL: https://phikila-app.vercel.app
         run: |
           npm run build
-          PORT=3000 npm run start &
-          echo $! > /tmp/server.pid
+          # Kill any stale process on port 3000 before starting
+          lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+          PORT=3000 npm run start > /tmp/server.log 2>&1 &
+          SERVER_PID=$!
+          echo "$SERVER_PID" > /tmp/server.pid
+          # Verify the process is actually alive
+          if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+            echo "Server failed to start immediately!"
+            cat /tmp/server.log
+            exit 1
+          fi
           
           echo "Waiting for server..."
+          READY=false
           for i in $(seq 1 30); do
             if curl -s -o /dev/null http://localhost:3000; then
-              echo "Server ready"
+              echo "Server ready after ${i} attempts"
+              READY=true
               break
             fi
             sleep 2
           done
+          if [ "$READY" != "true" ]; then
+            echo "Server did not become ready within timeout"
+            cat /tmp/server.log
+            exit 1
+          fi
 
       - name: Record demo with Playwright
         env:
-          NEXT_PUBLIC_SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: |
           cd scripts/demo
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 npx tsx record.ts
+          npx tsx record.ts
+      - name: Verify recording output
+        run: |
+          ls -la scripts/demo/output/ || true
+          test -f scripts/demo/output/demo.raw.mkv -a -s scripts/demo/output/demo.raw.mkv || { echo "Playwright recording missing or empty"; ls -la scripts/demo/output/; exit 1; }
 
       - name: Generate TTS narration
         run: |
           cd scripts/demo
           python3 generate-tts.py
+      - name: Verify TTS audio
+        run: |
+          test -f scripts/demo/output/demo.mp3 -a -s scripts/demo/output/demo.mp3 || { echo "TTS audio missing or empty"; ls -la scripts/demo/output/; exit 1; }
 
       - name: Render video with FFmpeg
         run: |
           cd scripts/demo
           bash render.sh
+      - name: Verify final video
+        run: |
+          test -f scripts/demo/output/phikila-demo.mp4 -a -s scripts/demo/output/phikila-demo.mp4 || { echo "Final video missing or empty"; ls -la scripts/demo/output/; exit 1; }
+          test -f scripts/demo/output/thumbnail.jpg -a -s scripts/demo/output/thumbnail.jpg || { echo "Thumbnail missing"; exit 1; }
 
       - name: Upload to Cloudflare R2
         env:
@@ -221,8 +251,17 @@ jobs:
             else
               git commit -m "chore: update demo video URL [skip ci]"
               git fetch origin main
-              git rebase origin/main
-              git push origin main
+              # Retry rebase up to 3 times to handle concurrent pushes
+              for attempt in 1 2 3; do
+                if git rebase origin/main; then
+                  git push origin main && break
+                else
+                  echo "Rebase attempt $attempt failed, retrying..."
+                  git rebase --abort 2>/dev/null || true
+                  git fetch origin main
+                  sleep 5
+                fi
+              done
             fi
           fi
 

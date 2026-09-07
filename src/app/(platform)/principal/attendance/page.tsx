@@ -45,46 +45,69 @@ export default function PrincipalAttendancePage() {
         return;
       }
 
+      const schoolId = schoolMember.school_id;
+
       const { data: classesData } = await supabase
         .from("classes")
         .select("id, name, grades(name)")
-        .eq("school_id", schoolMember.school_id);
+        .eq("school_id", schoolId);
 
-      if (!classesData) {
-        setLoading(false);
-        return;
-      }
+      const classIds = (classesData ?? []).map((c) => c.id);
 
-      const results: ClassAttendance[] = [];
-
-      for (const cls of classesData) {
-        const { data: students } = await supabase
+      const [studentsRes, attendanceRes, teachersRes] = await Promise.all([
+        supabase
           .from("students")
-          .select("id")
-          .eq("class_id", cls.id)
-          .eq("is_active", true);
-
-        const studentIds = students?.map((s) => s.id) ?? [];
-
-        const { data: attendance } = await supabase
+          .select("id, class_id")
+          .eq("school_id", schoolId)
+          .eq("is_active", true),
+        supabase
           .from("attendance_records")
-          .select("status")
-          .eq("date", selectedDate)
-          .in("student_id", studentIds);
+          .select("student_id, status")
+          .eq("school_id", schoolId)
+          .eq("date", selectedDate),
+        classIds.length > 0
+          ? supabase
+              .from("class_teachers")
+              .select("class_id, staff(first_name, last_name)")
+              .in("class_id", classIds)
+          : { data: [] },
+      ]);
 
-        const present = attendance?.filter((a) => a.status === "present").length ?? 0;
-        const absent = attendance?.filter((a) => a.status === "absent").length ?? 0;
-        const late = attendance?.filter((a) => a.status === "late").length ?? 0;
+      const allStudents = studentsRes.data ?? [];
+      const allAttendance = attendanceRes.data ?? [];
+      const allTeachers = teachersRes.data ?? [];
 
-        results.push({
+      const teacherMap: Record<string, string> = {};
+      allTeachers.forEach((t: any) => {
+        if (t.staff) {
+          teacherMap[t.class_id] = `${t.staff.first_name} ${t.staff.last_name}`;
+        }
+      });
+
+      const studentCountByClass: Record<string, number> = {};
+      allStudents.forEach((s) => {
+        studentCountByClass[s.class_id] = (studentCountByClass[s.class_id] || 0) + 1;
+      });
+
+      const studentIdsByClass: Record<string, string[]> = {};
+      allStudents.forEach((s) => {
+        if (!studentIdsByClass[s.class_id]) studentIdsByClass[s.class_id] = [];
+        studentIdsByClass[s.class_id].push(s.id);
+      });
+
+      const results: ClassAttendance[] = (classesData ?? []).map((cls) => {
+        const studentIds = new Set(studentIdsByClass[cls.id] ?? []);
+        const classAttendance = allAttendance.filter((a) => studentIds.has(a.student_id));
+
+        return {
           class_name: `${(cls.grades as any)?.name ?? ""} ${cls.name}`.trim(),
-          teacher_name: "—",
-          present,
-          absent,
-          late,
-          total: students?.length ?? 0,
-        });
-      }
+          teacher_name: teacherMap[cls.id] ?? "—",
+          present: classAttendance.filter((a) => a.status === "present").length,
+          absent: classAttendance.filter((a) => a.status === "absent").length,
+          late: classAttendance.filter((a) => a.status === "late").length,
+          total: studentCountByClass[cls.id] ?? 0,
+        };
+      });
 
       setClasses(results);
       setLoading(false);

@@ -256,19 +256,22 @@ export default function PrincipalExamsPage() {
       .single();
     if (!sm) return;
 
-    await supabase.from("exams").insert({
+    const { data: inserted } = await supabase.from("exams").insert({
       name: newExam.name,
       exam_type: newExam.exam_type,
       exam_date: newExam.exam_date,
       total_marks: newExam.total_marks,
       school_id: sm.school_id,
       term_id: activeTerm?.id ?? null,
-    });
+    }).select().single();
+
+    if (inserted) {
+      setExams((prev) => [inserted, ...prev]);
+    }
 
     setNewExam({ name: "", exam_type: "midterm", exam_date: "", total_marks: 100 });
     setShowCreateModal(false);
     setCreating(false);
-    window.location.reload();
   };
 
   if (loading) {

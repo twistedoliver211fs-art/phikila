@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Users,
   GraduationCap,
@@ -44,6 +45,7 @@ const typeLabels: Record<string, { label: string; color: string }> = {
 };
 
 export default function AdmissionsOfficerPage() {
+  const router = useRouter();
   const supabase = createClient();
 
   const [school, setSchool] = useState<School | null>(null);
@@ -331,15 +333,15 @@ export default function AdmissionsOfficerPage() {
           Quick Actions
         </h2>
         <div className="flex flex-wrap gap-3">
-          <Button>
+          <Button onClick={() => router.push("/admissions-officer/staff/new")}>
             <UserPlus className="h-4 w-4" />
             Register Teacher
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => router.push("/admissions-officer/students/new")}>
             <GraduationCap className="h-4 w-4" />
             Register Student
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => router.push("/admissions-officer/non-teaching")}>
             <Briefcase className="h-4 w-4" />
             Register Non-Teaching Staff
           </Button>

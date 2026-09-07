@@ -1,7 +1,7 @@
-import { DollarSign, TrendingUp, AlertCircle, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DollarSign, TrendingUp, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentSchoolId } from "@/lib/supabase/helpers";
+import { FeesActions } from "@/components/platform/fees-actions";
 
 export default async function PrincipalFeesPage() {
   const schoolId = await getCurrentSchoolId();
@@ -31,7 +31,7 @@ export default async function PrincipalFeesPage() {
           <h1 className="text-2xl font-bold text-foreground">Fees & Finance</h1>
           <p className="text-muted-foreground mt-1">Fee collection overview</p>
         </div>
-        <Button size="sm"><Download className="mr-2 h-4 w-4" />Export Report</Button>
+        <FeesActions accounts={accounts ?? []} />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -137,7 +137,7 @@ export default async function PrincipalFeesPage() {
                       <td className="p-4 text-green-600">KES {Number(a.amount_paid).toLocaleString()}</td>
                       <td className="p-4 font-medium text-red-600">KES {Number(a.balance).toLocaleString()}</td>
                       <td className="p-4">
-                        <Button variant="ghost" size="sm">Send Reminder</Button>
+                        <span className="text-xs text-muted-foreground">Reminder pending</span>
                       </td>
                     </tr>
                   ))

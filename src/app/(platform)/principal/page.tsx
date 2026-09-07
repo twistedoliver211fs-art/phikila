@@ -1,149 +1,273 @@
+import Link from "next/link";
 import {
   AlertTriangle,
   Users,
-  GraduationCap,
   DollarSign,
   UserCheck,
   TrendingUp,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentSchoolId } from "@/lib/supabase/helpers";
 import { NotificationCenter } from "@/components/platform/notification-center";
 
-const attentionItems = [
-  {
-    icon: Users,
-    title: "12 attendance concerns",
-    description: "Students with 3+ absences this week",
-    color: "text-amber-600 bg-amber-50 border-amber-200",
-    action: "View Attendance",
-  },
-  {
-    icon: AlertTriangle,
-    title: "2 staff members absent",
-    description: "Coverage needed for today",
-    color: "text-red-600 bg-red-50 border-red-200",
-    action: "Review Staff",
-  },
-  {
-    icon: DollarSign,
-    title: "8 overdue fee accounts",
-    description: "Payments past due date",
-    color: "text-blue-600 bg-blue-50 border-blue-200",
-    action: "Review Fees",
-  },
-  {
-    icon: UserCheck,
-    title: "3 admissions pending",
-    description: "Applications awaiting review",
-    color: "text-green-600 bg-green-50 border-green-200",
-    action: "Review Admissions",
-  },
-];
+export default async function PrincipalPage() {
+  const supabase = await createClient();
+  const schoolId = await getCurrentSchoolId();
 
-const todayOverview = [
-  { label: "Student Attendance", value: "94%", color: "text-green-600" },
-  { label: "Staff Attendance", value: "97%", color: "text-green-600" },
-  { label: "Fee Collection", value: "82%", color: "text-amber-600" },
-  { label: "Admissions Pending", value: "3", color: "text-blue-600" },
-];
+  const today = new Date();
+  const todayDate = today.toISOString().split("T")[0];
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-const performanceTrends = [
-  { label: "Academic Performance", trend: "up", value: "+2.3%" },
-  { label: "Attendance Rate", trend: "up", value: "+1.1%" },
-  { label: "Fee Collection", trend: "down", value: "-0.8%" },
-  { label: "Enrollment Growth", trend: "up", value: "+5.2%" },
-];
+  const { count: totalStudents } = await supabase
+    .from("students")
+    .select("id", { count: "exact", head: true })
+    .eq("school_id", schoolId)
+    .eq("is_active", true);
 
-export default function PrincipalPage() {
+  const { data: todayAttendance } = await supabase
+    .from("attendance_records")
+    .select("status")
+    .eq("school_id", schoolId)
+    .eq("date", todayDate);
+
+  const presentToday = todayAttendance?.filter((a) => a.status === "present" || a.status === "late").length ?? 0;
+  const studentAttendanceRate = (totalStudents ?? 0) > 0
+    ? ((presentToday / (totalStudents ?? 1)) * 100).toFixed(0)
+    : "0";
+
+  const { count: totalStaff } = await supabase
+    .from("staff")
+    .select("id", { count: "exact", head: true })
+    .eq("school_id", schoolId)
+    .eq("is_active", true);
+
+  const { count: absentStaff } = await supabase
+    .from("attendance_records")
+    .select("id", { count: "exact", head: true })
+    .eq("school_id", schoolId)
+    .eq("date", todayDate)
+    .eq("status", "absent");
+
+  const staffAttendanceRate = (totalStaff ?? 0) > 0
+    ? (((totalStaff! - (absentStaff ?? 0)) / totalStaff!) * 100).toFixed(0)
+    : "0";
+
+  const { data: feeAccounts } = await supabase
+    .from("student_accounts")
+    .select("amount_due, amount_paid, balance")
+    .eq("school_id", schoolId);
+
+  const totalDue = feeAccounts?.reduce((a, acc) => a + Number(acc.amount_due), 0) ?? 0;
+  const totalPaid = feeAccounts?.reduce((a, acc) => a + Number(acc.amount_paid), 0) ?? 0;
+  const feeCollectionRate = totalDue > 0 ? ((totalPaid / totalDue) * 100).toFixed(0) : "0";
+
+  const overdueAccounts = feeAccounts?.filter((a) => Number(a.balance) > 0).length ?? 0;
+
+  const { count: pendingAdmissions } = await supabase
+    .from("admissions")
+    .select("id", { count: "exact", head: true })
+    .eq("school_id", schoolId)
+    .eq("status", "pending");
+
+  const { data: weekAttendance } = await supabase
+    .from("attendance_records")
+    .select("student_id, status")
+    .eq("school_id", schoolId)
+    .gte("date", weekAgo)
+    .lte("date", todayDate);
+
+  const absenceCounts: Record<string, number> = {};
+  weekAttendance?.forEach((a) => {
+    if (a.status === "absent") {
+      absenceCounts[a.student_id] = (absenceCounts[a.student_id] || 0) + 1;
+    }
+  });
+  const attendanceConcerns = Object.values(absenceCounts).filter((c) => c >= 3).length;
+
+  const { count: staffAbsentToday } = await supabase
+    .from("attendance_records")
+    .select("id", { count: "exact", head: true })
+    .eq("school_id", schoolId)
+    .eq("date", todayDate)
+    .eq("status", "absent");
+
+  const attentionItems = [];
+  if (attendanceConcerns > 0) {
+    attentionItems.push({
+      icon: Users,
+      title: `${attendanceConcerns} attendance concerns`,
+      description: "Students with 3+ absences this week",
+      color: "text-amber-600 bg-amber-50 border-amber-200",
+      action: "View Attendance",
+      href: "/principal/attendance",
+    });
+  }
+  if ((staffAbsentToday ?? 0) > 0) {
+    attentionItems.push({
+      icon: AlertTriangle,
+      title: `${staffAbsentToday} staff member(s) absent`,
+      description: "Coverage needed for today",
+      color: "text-red-600 bg-red-50 border-red-200",
+      action: "Review Staff",
+      href: "/principal/staff",
+    });
+  }
+  if (overdueAccounts > 0) {
+    attentionItems.push({
+      icon: DollarSign,
+      title: `${overdueAccounts} overdue fee accounts`,
+      description: "Payments past due date",
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+      action: "Review Fees",
+      href: "/principal/fees",
+    });
+  }
+  if ((pendingAdmissions ?? 0) > 0) {
+    attentionItems.push({
+      icon: UserCheck,
+      title: `${pendingAdmissions} admissions pending`,
+      description: "Applications awaiting review",
+      color: "text-green-600 bg-green-50 border-green-200",
+      action: "Review Admissions",
+      href: "/principal/admissions",
+    });
+  }
+
+  const hour = today.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
     <div className="space-y-6">
-      {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Good morning</h1>
+        <h1 className="text-2xl font-bold text-foreground">{greeting}</h1>
         <p className="text-muted-foreground mt-1">
           Here&apos;s what needs attention at your school.
         </p>
       </div>
 
-      {/* Needs Attention */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-base font-semibold text-foreground mb-4">
-          Needs Your Attention
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {attentionItems.map((item) => (
-            <div
-              key={item.title}
-              className={`flex items-start gap-3 rounded-lg border p-4 ${item.color}`}
-            >
-              <item.icon className="h-5 w-5 mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{item.title}</p>
-                <p className="text-xs opacity-80 mt-0.5">{item.description}</p>
-                <button className="mt-2 text-xs font-semibold underline opacity-90 hover:opacity-100">
-                  {item.action}
-                </button>
+      {attentionItems.length > 0 ? (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-base font-semibold text-foreground mb-4">
+            Needs Your Attention
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {attentionItems.map((item) => (
+              <div
+                key={item.title}
+                className={`flex items-start gap-3 rounded-lg border p-4 ${item.color}`}
+              >
+                <item.icon className="h-5 w-5 mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{item.title}</p>
+                  <p className="text-xs opacity-80 mt-0.5">{item.description}</p>
+                  <Link
+                    href={item.href}
+                    className="mt-2 inline-block text-xs font-semibold underline opacity-90 hover:opacity-100"
+                  >
+                    {item.action}
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-base font-semibold text-foreground mb-2">
+            All systems operating normally
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            No issues require your attention right now.
+          </p>
+        </div>
+      )}
 
-      {/* Today's School Overview */}
       <div>
         <h2 className="text-base font-semibold text-foreground mb-4">
           Today&apos;s School Overview
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {todayOverview.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-xl border border-border bg-card p-5"
-            >
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {item.label}
-              </p>
-              <p className={`mt-2 text-2xl font-bold ${item.color}`}>
-                {item.value}
-              </p>
-            </div>
-          ))}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Student Attendance
+            </p>
+            <p className="mt-2 text-2xl font-bold text-green-600">
+              {studentAttendanceRate}%
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Staff Attendance
+            </p>
+            <p className="mt-2 text-2xl font-bold text-green-600">
+              {staffAttendanceRate}%
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Fee Collection
+            </p>
+            <p className={`mt-2 text-2xl font-bold ${Number(feeCollectionRate) >= 80 ? "text-green-600" : "text-amber-600"}`}>
+              {feeCollectionRate}%
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Admissions Pending
+            </p>
+            <p className="mt-2 text-2xl font-bold text-blue-600">
+              {pendingAdmissions ?? 0}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Performance Trends */}
       <div>
         <h2 className="text-base font-semibold text-foreground mb-4">
           School Performance
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {performanceTrends.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-xl border border-border bg-card p-5"
-            >
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {item.label}
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <TrendingUp
-                  className={`h-4 w-4 ${
-                    item.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
-                />
-                <span
-                  className={`text-lg font-bold ${
-                    item.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {item.value}
-                </span>
-              </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Total Students
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span className="text-lg font-bold text-foreground">{totalStudents ?? 0}</span>
             </div>
-          ))}
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Total Staff
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span className="text-lg font-bold text-foreground">{totalStaff ?? 0}</span>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Fee Revenue
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-lg font-bold text-foreground">
+                KES {totalPaid.toLocaleString()}
+              </span>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Outstanding
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-lg font-bold text-amber-600">
+                KES {(totalDue - totalPaid).toLocaleString()}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Communication */}
       <NotificationCenter />
     </div>
   );

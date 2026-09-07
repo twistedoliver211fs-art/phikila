@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Save, Palette, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "@/components/platform/toast";
 
 const DEFAULT_PALETTE = [
   "#6366f1",
@@ -138,7 +139,7 @@ export default function TimetableSettingsPage() {
     }
 
     setSaving(false);
-    alert("Settings saved!");
+    toast("Settings saved!");
   };
 
   return (

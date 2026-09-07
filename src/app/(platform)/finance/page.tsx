@@ -1,7 +1,7 @@
-import { DollarSign, TrendingUp, AlertCircle, Download, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DollarSign, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentSchoolId } from "@/lib/supabase/helpers";
+import { FinanceActions } from "@/components/platform/finance-actions";
 
 export default async function FinancePage() {
   const schoolId = await getCurrentSchoolId();
@@ -38,10 +38,7 @@ export default async function FinancePage() {
           <h1 className="text-2xl font-bold text-foreground">Finance</h1>
           <p className="text-muted-foreground mt-1">Fee collection and payment tracking</p>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline"><Download className="mr-2 h-4 w-4" />Export</Button>
-          <Button size="sm"><DollarSign className="mr-2 h-4 w-4" />Record Payment</Button>
-        </div>
+        <FinanceActions payments={payments ?? []} />
       </div>
 
       {/* KPI Cards */}

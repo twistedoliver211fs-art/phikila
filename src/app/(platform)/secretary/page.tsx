@@ -1,7 +1,7 @@
 import { Bell, MessageSquare, Calendar, Users, FileText, Megaphone } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentSchoolId } from "@/lib/supabase/helpers";
+import { SecretaryQuickActions } from "@/components/platform/secretary-quick-actions";
 
 export default async function SecretaryPage() {
   const schoolId = await getCurrentSchoolId();
@@ -77,24 +77,7 @@ export default async function SecretaryPage() {
       {/* Quick Actions */}
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="text-sm font-semibold text-foreground mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <button className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
-            <Megaphone className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium text-foreground">New Announcement</span>
-          </button>
-          <button className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium text-foreground">Send Message</span>
-          </button>
-          <button className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
-            <Calendar className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium text-foreground">Schedule Event</span>
-          </button>
-          <button className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors">
-            <FileText className="h-5 w-5 text-primary" />
-            <span className="text-xs font-medium text-foreground">Generate Report</span>
-          </button>
-        </div>
+        <SecretaryQuickActions />
       </div>
 
       {/* Recent Announcements */}

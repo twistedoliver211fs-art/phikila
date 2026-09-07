@@ -296,7 +296,7 @@ export default function PerformanceAnalysisPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" onClick={() => window.print()}>
             <Download className="mr-2 h-4 w-4" />
             Export Report
           </Button>

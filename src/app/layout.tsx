@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/platform/theme-provider";
+import { Toaster } from "@/components/platform/toast";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -49,7 +51,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Phikila" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

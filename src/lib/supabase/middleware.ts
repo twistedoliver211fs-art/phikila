@@ -1,5 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  portalRoutes,
+  getAllowedRoles,
+  isProtectedPath,
+  isAuthPath,
+} from "@/lib/auth-config";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,24 +41,36 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const protectedPaths = [
-    "/dashboard",
-    "/super-admin",
-    "/principal",
-    "/teacher",
-    "/parent",
-    "/admissions-officer",
-    "/finance",
-    "/secretary",
-    "/platform",
-  ];
+  const isProtected = isProtectedPath(pathname);
 
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
-
-  if (!user && !pathname.startsWith("/login") && !pathname.startsWith("/auth") && !pathname.startsWith("/callback") && isProtected) {
+  if (!user && !isAuthPath(pathname) && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  if (user && isProtected) {
+    const { data: members } = await supabase
+      .from("school_members")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .limit(1);
+
+    const userRole = members?.[0]?.role;
+
+    if (!userRole) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/no-access";
+      return NextResponse.redirect(url);
+    }
+
+    const allowedRoles = getAllowedRoles(pathname);
+    if (allowedRoles && !allowedRoles.includes(userRole)) {
+      const url = request.nextUrl.clone();
+      url.pathname = portalRoutes[userRole] ?? "/teacher";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

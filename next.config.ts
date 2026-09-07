@@ -1,41 +1,17 @@
 import type { NextConfig } from "next";
-import withSerwist from "@serwist/next";
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   async headers() {
     return [
       {
-        // Apply to all routes
         source: "/(.*)",
         headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
           {
-            // Prevent clickjacking — the app is embedded in no iframes
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            // Stop MIME-type sniffing
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            // Strip referrer when navigating off-site
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          // Only allow secure HTTPS transport once the browser knows the site is HTTPS
-          // (Vercel serves HTTPS at the edge; this header lives in the response so
-          //  the browser enforces it for all future navigations to this origin.)
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains; preload",
-          },
-          // Allow images, script, style, font, and connect (Supabase realtime).
-          // Reports violations to the browser console; intentionally strict.
-          {
-            // Next.js production builds pre-bundle everything — they do not
-            // need eval. Leave it out so the browser blocks any at-runtime
-            // eval() that might leak in via a compromised dependency.
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; " +
@@ -53,8 +29,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist({
-  swSrc: "src/app/sw.ts",
-  swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === "development",
-})(nextConfig);
+export default nextConfig;

@@ -14,6 +14,57 @@ jobs:
         with:
           node-version: 20
       - name: Check for new upstream releases
+        id: check
         run: |
           echo "Checking latest release..."
-          curl -s https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest | jq '.tag_name'
+          UPSTREAM_TAG=$(curl -s https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest | jq -r '.tag_name')
+          echo "Upstream latest: $UPSTREAM_TAG"
+          echo "upstream_tag=$UPSTREAM_TAG" >> $GITHUB_OUTPUT
+          
+          # Read local version from package.json
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          echo "Local version: $LOCAL_VERSION"
+          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          
+          # Normalize: strip leading 'v' for comparison
+          UPSTREAM_NORM="${UPSTREAM_TAG#v}"
+          LOCAL_NORM="${LOCAL_VERSION#v}"
+          
+          if [ "$UPSTREAM_NORM" != "$LOCAL_NORM" ]; then
+            echo "VERSION_BEHIND=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Local version ($LOCAL_NORM) is BEHIND upstream ($UPSTREAM_NORM)"
+          else
+            echo "VERSION_BEHIND=false" >> $GITHUB_OUTPUT
+            echo "✅ Local version is up to date"
+          fi
+      - name: Create issue if behind
+        if: steps.check.outputs.version_behind == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const upstream = '${{ steps.check.outputs.upstream_tag }}';
+            const local = '${{ steps.check.outputs.local_version }}';
+            const body = `Upstream release **${upstream}** is available but this repository is on **${local}**.\n\nPlease review and merge the upstream changes or update the version.`;
+            
+            // Check if an open issue already exists for this
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'upstream-release',
+              per_page: 10
+            });
+            
+            const hasOpen = existing.some(i => i.title.includes(upstream));
+            if (hasOpen) {
+              console.log('Issue already exists for this release');
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Upstream release ${upstream} available (local: ${local})`,
+                body,
+                labels: ['upstream-release']
+              });
+              console.log('Issue created');
+            }

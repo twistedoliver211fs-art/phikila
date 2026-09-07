@@ -31,24 +31,34 @@ export function NotificationCenter() {
   useEffect(() => {
     const supabase = createClient();
 
-    supabase
-      .from("notifications")
-      .select("id, title, message, is_read, created_at, type")
-      .order("created_at", { ascending: false })
-      .limit(10)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setNotifications(data);
-        }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
         setLoading(false);
-      });
+        return;
+      }
+      supabase
+        .from("notifications")
+        .select("id, title, message, is_read, created_at, type")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10)
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setNotifications(data);
+          }
+          setLoading(false);
+        });
+    });
   }, []);
 
   const markAllRead = async () => {
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     await supabase
       .from("notifications")
       .update({ is_read: true })
+      .eq("user_id", user.id)
       .eq("is_read", false);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };

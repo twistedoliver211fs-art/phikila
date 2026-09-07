@@ -17,13 +17,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint || true
+      - run: npm run lint
       - run: npx tsc --noEmit
       - run: npm run build
+      - name: Verify build output
+        run: |
+          test -f .next/BUILD_ID || { echo "Next.js build missing BUILD_ID"; exit 1; }
+          test -d .next/static || { echo "Next.js build missing static chunks"; exit 1; }
+      - name: Audit dependencies
+        run: npm audit --production 2>&1 | tee audit.log || true
 
   deploy:
     needs: lint-and-build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -153,6 +159,10 @@ jobs:
         run: cd android && ./gradlew assembleDebug
       - name: Build release APK
         run: cd android && ./gradlew assembleRelease
+      - name: Verify release APK is signed
+        if: always()
+        run: |
+          apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk || { echo "Release APK is not signed!"; exit 1; }
       - name: Rename artifacts
         run: |
           mkdir -p dist

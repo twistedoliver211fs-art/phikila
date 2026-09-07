@@ -1,0 +1,76 @@
+import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
+
+const API_VERSION = "1.0";
+
+export async function POST(request: Request) {
+  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000, prefix: "v1-captcha-verify" });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { ok: false, error: "Too many requests. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
+  const body = await request.json().catch(() => null);
+  const token = body?.token;
+  const siteUrl = body?.siteUrl ?? "https://phikila-app.vercel.app";
+
+  if (!token || typeof token !== "string") {
+    return NextResponse.json(
+      { ok: false, error: "Missing or invalid captcha token." },
+      { status: 400 }
+    );
+  }
+
+  const secret = process.env.SUPABASE_CAPTCHA_SECRET;
+  if (!secret) {
+    console.error("[v1/captcha-verify] SUPABASE_CAPTCHA_SECRET is not set.");
+    return NextResponse.json(
+      { ok: false, error: "Captcha verification is not configured." },
+      { status: 500 }
+    );
+  }
+
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  try {
+    const res = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          secret,
+          response: token,
+          site_url: siteUrl,
+          ...(siteKey ? { site_key: siteKey } : {}),
+        }),
+      }
+    );
+
+    const json = (await res.json()) as {
+      success: boolean;
+      "error-codes"?: string[];
+    };
+
+    if (!json.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Captcha verification failed.",
+          codes: json["error-codes"] ?? [],
+        },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, version: API_VERSION });
+  } catch (err) {
+    console.error("[v1/captcha-verify] siteverify request failed:", err);
+    return NextResponse.json(
+      { ok: false, error: "Captcha verification service unavailable." },
+      { status: 502 }
+    );
+  }
+}

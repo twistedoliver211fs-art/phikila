@@ -36,7 +36,7 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const navConfig: Record<string, { label: string; href: string; icon: React.ComponentType<{ className?: string }> }[]> = {
+const navConfig: Record<string, { label: string; href: string; icon: React.ComponentType<{ className?: string }>; disabled?: boolean }[]> = {
   super_admin: [
     { label: "Dashboard", href: "/super-admin", icon: LayoutDashboard },
     { label: "Schools", href: "/super-admin/schools", icon: School },
@@ -60,8 +60,8 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "Who's Where", href: "/principal/timetable/who-is-where", icon: Activity },
     { label: "Timetable Settings", href: "/principal/timetable/settings", icon: Settings },
     { label: "Admissions", href: "/principal/admissions", icon: UserCheck },
-    { label: "Communication", href: "/principal", icon: MessageSquare },
-    { label: "Reports", href: "/principal", icon: FileText },
+    { label: "Communication", href: "/principal", icon: MessageSquare, disabled: true },
+    { label: "Reports", href: "/principal", icon: FileText, disabled: true },
   ],
   teacher: [
     { label: "Dashboard", href: "/teacher", icon: LayoutDashboard },
@@ -69,9 +69,9 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "My Students", href: "/teacher/students", icon: GraduationCap },
     { label: "Attendance", href: "/teacher/attendance", icon: ClipboardCheck },
     { label: "Exams & Results", href: "/teacher/exams", icon: BarChart3 },
-    { label: "Academics", href: "/teacher", icon: BookOpen },
-    { label: "Communication", href: "/teacher", icon: MessageSquare },
-    { label: "Profile", href: "/teacher", icon: Settings },
+    { label: "Academics", href: "/teacher", icon: BookOpen, disabled: true },
+    { label: "Communication", href: "/teacher", icon: MessageSquare, disabled: true },
+    { label: "Profile", href: "/teacher", icon: Settings, disabled: true },
   ],
   timetable_manager: [
     { label: "Dashboard", href: "/teacher", icon: LayoutDashboard },
@@ -91,35 +91,35 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
   parent: [
     { label: "Home", href: "/dashboard", icon: Home },
     { label: "Children", href: "/parent", icon: Baby },
-    { label: "Attendance", href: "/parent", icon: ClipboardCheck },
-    { label: "Fees", href: "/parent", icon: DollarSign },
-    { label: "Academics", href: "/parent", icon: BookOpen },
-    { label: "Timetable", href: "/parent", icon: Calendar },
-    { label: "Communication", href: "/parent", icon: Mail },
+    { label: "Attendance", href: "/parent/attendance", icon: ClipboardCheck },
+    { label: "Fees", href: "/parent/fees", icon: DollarSign },
+    { label: "Academics", href: "/parent", icon: BookOpen, disabled: true },
+    { label: "Timetable", href: "/parent", icon: Calendar, disabled: true },
+    { label: "Communication", href: "/parent", icon: Mail, disabled: true },
   ],
   admissions_officer: [
     { label: "Dashboard", href: "/admissions-officer", icon: LayoutDashboard },
     { label: "Staff Registration", href: "/admissions-officer/staff", icon: Users },
     { label: "Student Registration", href: "/admissions-officer/students", icon: GraduationCap },
     { label: "Non-Teaching Staff", href: "/admissions-officer/non-teaching", icon: UserCheck },
-    { label: "Reports", href: "/admissions-officer", icon: BarChart3 },
-    { label: "Communication", href: "/admissions-officer", icon: MessageSquare },
+    { label: "Reports", href: "/admissions-officer", icon: BarChart3, disabled: true },
+    { label: "Communication", href: "/admissions-officer", icon: MessageSquare, disabled: true },
   ],
   finance: [
     { label: "Dashboard", href: "/finance", icon: LayoutDashboard },
-    { label: "Payments", href: "/finance", icon: DollarSign },
-    { label: "Fee Structures", href: "/finance", icon: CreditCard },
-    { label: "Outstanding", href: "/finance", icon: ClipboardList },
-    { label: "Reports", href: "/finance", icon: BarChart3 },
-    { label: "Communication", href: "/finance", icon: MessageSquare },
+    { label: "Payments", href: "/finance/payments", icon: DollarSign },
+    { label: "Fee Structures", href: "/finance/fee-structures", icon: CreditCard },
+    { label: "Outstanding", href: "/finance", icon: ClipboardList, disabled: true },
+    { label: "Reports", href: "/finance", icon: BarChart3, disabled: true },
+    { label: "Communication", href: "/finance", icon: MessageSquare, disabled: true },
   ],
   secretary: [
     { label: "Dashboard", href: "/secretary", icon: LayoutDashboard },
-    { label: "Announcements", href: "/secretary", icon: Megaphone },
-    { label: "Messages", href: "/secretary", icon: Mail },
-    { label: "Staff Directory", href: "/secretary", icon: Users },
-    { label: "Calendar", href: "/secretary", icon: Calendar },
-    { label: "Documents", href: "/secretary", icon: FileText },
+    { label: "Announcements", href: "/secretary/announcements", icon: Megaphone },
+    { label: "Messages", href: "/secretary", icon: Mail, disabled: true },
+    { label: "Staff Directory", href: "/secretary", icon: Users, disabled: true },
+    { label: "Calendar", href: "/secretary", icon: Calendar, disabled: true },
+    { label: "Documents", href: "/secretary", icon: FileText, disabled: true },
   ],
 };
 
@@ -169,19 +169,26 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
                 : pathname === item.href;
               return (
                 <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {item.label}
-                  </Link>
+                  {item.disabled ? (
+                    <span className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/50 cursor-not-allowed">
+                      <item.icon className="h-4 w-4 shrink-0 opacity-50" />
+                      {item.label}
+                    </span>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               );
             })}

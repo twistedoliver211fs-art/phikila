@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle, XCircle, Clock, Save, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "@/components/platform/toast";
 
 interface Student {
   id: string;
@@ -110,7 +111,7 @@ export default function TeacherAttendancePage() {
       onConflict: "student_id,date",
     });
 
-    alert("Attendance saved!");
+    toast("Attendance saved!");
   };
 
   const present = students.filter((s) => s.status === "present").length;

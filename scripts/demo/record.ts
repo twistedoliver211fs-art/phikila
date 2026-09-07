@@ -61,7 +61,7 @@ async function authenticateSupabase(): Promise<{
 }
 
 async function injectSession(
-  page: Awaited<ReturnType<typeof chromium["launch"]>>["contexts"] extends () => Promise<(infer T)[]> ? T : never,
+  page: any,
   tokens: { access_token: string; refresh_token: string }
 ) {
   console.log("🍪 Injecting session into browser...");
