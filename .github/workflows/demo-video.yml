@@ -118,12 +118,12 @@ jobs:
           R2_THUMB="demo/thumbnail-${DATE}.jpg"
           
           echo "Uploading video..."
-          wrangler r2 object put "${R2_BUCKET}/${R2_KEY}" \
+          npx wrangler r2 object put "${R2_BUCKET}/${R2_KEY}" \
             --file output/phikila-demo.mp4 \
             --content-type "video/mp4"
           
           echo "Uploading thumbnail..."
-          wrangler r2 object put "${R2_BUCKET}/${R2_THUMB}" \
+          npx wrangler r2 object put "${R2_BUCKET}/${R2_THUMB}" \
             --file output/thumbnail.jpg \
             --content-type "image/jpeg"
           
