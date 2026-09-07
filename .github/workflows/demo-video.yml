@@ -125,12 +125,14 @@ jobs:
           echo "Uploading video..."
           npx wrangler r2 object put "${R2_BUCKET}/${R2_KEY}" \
             --file output/phikila-demo.mp4 \
-            --content-type "video/mp4"
+            --content-type "video/mp4" \
+            --remote
           
           echo "Uploading thumbnail..."
           npx wrangler r2 object put "${R2_BUCKET}/${R2_THUMB}" \
             --file output/thumbnail.jpg \
-            --content-type "image/jpeg"
+            --content-type "image/jpeg" \
+            --remote
           
           VIDEO_URL="${R2_PUBLIC_URL}/${R2_KEY}"
           THUMB_URL="${R2_PUBLIC_URL}/${R2_THUMB}"
