@@ -1,0 +1,173 @@
+name: Demo Video Auto-Update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'supabase/**'
+      - 'scripts/demo/**'
+  workflow_dispatch:
+
+env:
+  SITE_URL: https://phikila-app.vercel.app
+  R2_BUCKET: phikila-demo
+  R2_PUBLIC_URL: https://pub-3cd35e42e7e61aa4a6dfc0aa3ed42ca2.r2.dev
+
+jobs:
+  build-demo-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install edge-tts
+
+      - run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Reset demo database
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          DB_URL="postgresql://postgres:${SUPABASE_DB_PASSWORD}@db.pgiytpbrnyxnnfupvaiv.supabase.co:5432/postgres"
+          
+          echo "Clearing demo data..."
+          psql "$DB_URL" <<-'SQL' || true
+            DELETE FROM attendance_records WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM payments WHERE student_account_id IN (SELECT sa.id FROM student_accounts sa JOIN schools s ON sa.school_id = s.id WHERE s.slug = 'phikila-demo');
+            DELETE FROM student_accounts WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM students WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM staff WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM class_teachers WHERE class_id IN (SELECT c.id FROM classes c JOIN schools s ON c.school_id = s.id WHERE s.slug = 'phikila-demo');
+            DELETE FROM subjects WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM classes WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM grades WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM fee_structures WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM terms WHERE academic_year_id IN (SELECT id FROM academic_years WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo'));
+            DELETE FROM academic_years WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM school_members WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
+            DELETE FROM profiles WHERE id IN (SELECT user_id FROM auth.users WHERE email = 'demo@phikila.app');
+            DELETE FROM schools WHERE slug = 'phikila-demo';
+          SQL
+          
+          echo "Seeding fresh data..."
+          psql "$DB_URL" -f supabase/seed-demo.sql || echo "Seed had warnings, continuing..."
+
+      - name: Build and start app
+        run: |
+          npm run build
+          PORT=3000 npm run start &
+          echo $! > /tmp/server.pid
+          
+          echo "Waiting for server..."
+          for i in $(seq 1 30); do
+            if curl -s -o /dev/null http://localhost:3000; then
+              echo "Server ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Record demo with Playwright
+        run: |
+          cd scripts/demo
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 npx tsx record.ts
+
+      - name: Generate TTS narration
+        run: |
+          cd scripts/demo
+          python3 generate-tts.py
+
+      - name: Render video with FFmpeg
+        run: |
+          cd scripts/demo
+          bash render.sh
+
+      - name: Upload to Cloudflare R2
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_R2_TOKEN: ${{ secrets.CLOUDFLARE_R2_TOKEN }}
+        run: |
+          cd scripts/demo
+          
+          DATE=$(date +%Y%m%d)
+          R2_KEY="demo/phikila-demo-${DATE}.mp4"
+          R2_THUMB="demo/thumbnail-${DATE}.jpg"
+          
+          echo "Uploading video..."
+          wrangler r2 object put "${R2_BUCKET}/${R2_KEY}" \
+            --file output/phikila-demo.mp4 \
+            --content-type "video/mp4"
+          
+          echo "Uploading thumbnail..."
+          wrangler r2 object put "${R2_BUCKET}/${R2_THUMB}" \
+            --file output/thumbnail.jpg \
+            --content-type "image/jpeg"
+          
+          VIDEO_URL="${R2_PUBLIC_URL}/${R2_KEY}"
+          THUMB_URL="${R2_PUBLIC_URL}/${R2_THUMB}"
+          
+          echo "VIDEO_URL=${VIDEO_URL}" >> $GITHUB_ENV
+          echo "THUMB_URL=${THUMB_URL}" >> $GITHUB_ENV
+          
+          # Save URLs
+          cat > output/r2-urls.json << EOF
+          {"videoUrl":"${VIDEO_URL}","thumbnailUrl":"${THUMB_URL}","uploadedAt":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
+          EOF
+
+      - name: Update landing page video URL
+        run: |
+          if [ -n "${VIDEO_URL:-}" ]; then
+            echo "Updating landing page with video URL: $VIDEO_URL"
+            # The landing page reads from public/demo-config.json
+            cat > public/demo-config.json << EOF
+            {
+              "videoUrl": "${VIDEO_URL}",
+              "thumbnailUrl": "${THUMB_URL}",
+              "updatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+              "version": "$(date +%Y%m%d%H%M)"
+            }
+            EOF
+            
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add public/demo-config.json
+            git diff --staged --quiet || git commit -m "chore: update demo video URL [skip ci]" && git push
+          fi
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-video
+          path: |
+            scripts/demo/output/phikila-demo.mp4
+            scripts/demo/output/thumbnail.jpg
+            scripts/demo/output/captions.srt
+            scripts/demo/output/r2-urls.json
+          retention-days: 30
+
+      - name: Stop server
+        if: always()
+        run: kill $(cat /tmp/server.pid 2>/dev/null) 2>/dev/null || true
