@@ -77,6 +77,32 @@ jobs:
           echo "Seeding fresh data..."
           psql "$DB_URL" -f supabase/seed-demo.sql || echo "Seed had warnings, continuing..."
 
+      - name: Ensure demo user exists in Supabase Auth
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "Checking if demo user exists..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users?email=demo@phikila.app")
+          
+          if [ "$RESPONSE" = "200" ]; then
+            echo "Demo user already exists"
+          else
+            echo "Creating demo user..."
+            curl -s -X POST \
+              -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"email":"demo@phikila.app","password":"Demo1234!","email_confirm":true}' \
+              "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users"
+            echo ""
+            echo "Demo user created"
+          fi
+        env:
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
+
       - name: Build and start app
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
@@ -97,6 +123,9 @@ jobs:
           done
 
       - name: Record demo with Playwright
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
         run: |
           cd scripts/demo
           PLAYWRIGHT_BASE_URL=http://localhost:3000 npx tsx record.ts

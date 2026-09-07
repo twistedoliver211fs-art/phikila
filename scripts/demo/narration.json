@@ -1,84 +1,76 @@
 {
   "scenes": [
     {
-      "id": "intro",
+      "id": "landing-hero",
       "duration": 5,
       "narration": "Welcome to Phikila, the modern school management system built for Kenyan schools.",
-      "action": "wait",
-      "caption": "Welcome to Phikila"
+      "caption": "Welcome to Phikila",
+      "url": "/"
     },
     {
-      "id": "login",
-      "duration": 8,
-      "narration": "Log in securely with your email and password. The system supports Google sign in for quick access.",
-      "action": "navigate",
-      "url": "/login",
-      "steps": [
-        {"type": "wait", "ms": 1000},
-        {"type": "fill", "selector": "input[type='email']", "value": "demo@phikila.app"},
-        {"type": "fill", "selector": "input[type='password']", "value": "Demo1234!"},
-        {"type": "click", "selector": "button[type='submit']"},
-        {"type": "wait", "ms": 3000}
-      ],
-      "caption": "Secure Login"
+      "id": "landing-features",
+      "duration": 5,
+      "narration": "Manage students, staff, fees, attendance, and exams — all in one place.",
+      "caption": "Everything You Need",
+      "url": "/",
+      "scroll": "down",
+      "scrollPx": 600
+    },
+    {
+      "id": "landing-more",
+      "duration": 4,
+      "narration": "Built for the Kenyan education system with support for CBC and 8-4-4 curricula.",
+      "caption": "Made for Kenya",
+      "url": "/",
+      "scroll": "down",
+      "scrollPx": 600
     },
     {
       "id": "dashboard",
-      "duration": 10,
+      "duration": 8,
       "narration": "The principal dashboard gives you a complete overview of your school. See total students, staff count, fee collections, and attendance at a glance.",
-      "action": "wait",
-      "caption": "School Dashboard"
+      "caption": "School Dashboard",
+      "url": "/principal",
+      "waitFor": "main"
     },
     {
       "id": "students",
-      "duration": 8,
+      "duration": 7,
       "narration": "Manage all your students in one place. View profiles, track academic progress, and handle admissions effortlessly.",
-      "action": "navigate",
+      "caption": "Student Management",
       "url": "/principal/students",
-      "steps": [
-        {"type": "wait", "ms": 2000}
-      ],
-      "caption": "Student Management"
+      "waitFor": "main"
     },
     {
       "id": "fees",
-      "duration": 8,
+      "duration": 7,
       "narration": "Track fee payments and outstanding balances. Generate reports and send reminders to parents automatically.",
-      "action": "navigate",
+      "caption": "Fee Management",
       "url": "/principal/fees",
-      "steps": [
-        {"type": "wait", "ms": 2000}
-      ],
-      "caption": "Fee Management"
+      "waitFor": "main"
     },
     {
       "id": "attendance",
-      "duration": 7,
+      "duration": 6,
       "narration": "Record daily attendance in seconds. Track trends and identify students who need attention.",
-      "action": "navigate",
+      "caption": "Attendance Tracking",
       "url": "/principal/attendance",
-      "steps": [
-        {"type": "wait", "ms": 2000}
-      ],
-      "caption": "Attendance Tracking"
+      "waitFor": "main"
     },
     {
       "id": "exams",
-      "duration": 8,
+      "duration": 7,
       "narration": "Enter exam marks, generate report cards, and analyze performance across classes and subjects.",
-      "action": "navigate",
+      "caption": "Examinations",
       "url": "/principal/exams",
-      "steps": [
-        {"type": "wait", "ms": 2000}
-      ],
-      "caption": "Examinations"
+      "waitFor": "main"
     },
     {
       "id": "outro",
-      "duration": 6,
+      "duration": 5,
       "narration": "Phikila. One school OS, every device. Start your free trial today.",
-      "action": "wait",
-      "caption": "Start Your Free Trial"
+      "caption": "Start Your Free Trial",
+      "url": "/"
     }
   ]
 }
