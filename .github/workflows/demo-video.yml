@@ -78,6 +78,10 @@ jobs:
           psql "$DB_URL" -f supabase/seed-demo.sql || echo "Seed had warnings, continuing..."
 
       - name: Build and start app
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
+          NEXT_PUBLIC_SITE_URL: https://phikila-app.vercel.app
         run: |
           npm run build
           PORT=3000 npm run start &
