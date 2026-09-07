@@ -102,12 +102,7 @@ export default function RegisterStudentPage() {
     setSubmitting(true);
 
     try {
-      const { count } = await supabase
-        .from("student_registrations")
-        .select("*", { count: "exact", head: true })
-        .eq("school_id", schoolId);
-
-      const admissionNumber = `STD-${String((count ?? 0) + 1).padStart(4, "0")}`;
+      const admissionNumber = `STD-${Date.now().toString(36).toUpperCase()}`;
 
       const registrationData = {
         school_id: schoolId,
@@ -152,6 +147,7 @@ export default function RegisterStudentPage() {
     } catch (err) {
       console.error("Registration failed:", err);
       setSubmitting(false);
+      alert("Registration failed. Check that you have permission and try again.");
     }
   };
 

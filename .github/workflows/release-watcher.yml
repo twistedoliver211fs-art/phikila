@@ -30,12 +30,15 @@ jobs:
           UPSTREAM_NORM="${UPSTREAM_TAG#v}"
           LOCAL_NORM="${LOCAL_VERSION#v}"
           
-          if [ "$UPSTREAM_NORM" != "$LOCAL_NORM" ]; then
-            echo "VERSION_BEHIND=true" >> $GITHUB_OUTPUT
-            echo "⚠️ Local version ($LOCAL_NORM) is BEHIND upstream ($UPSTREAM_NORM)"
+          if [ "$UPSTREAM_TAG" = "null" ] || [ -z "$UPSTREAM_TAG" ]; then
+            echo "version_behind=false" >> $GITHUB_OUTPUT
+            echo "No GitHub release yet"
+          elif [ "$UPSTREAM_NORM" != "$LOCAL_NORM" ]; then
+            echo "version_behind=true" >> $GITHUB_OUTPUT
+            echo "package.json ($LOCAL_NORM) does not match latest release ($UPSTREAM_NORM)"
           else
-            echo "VERSION_BEHIND=false" >> $GITHUB_OUTPUT
-            echo "✅ Local version is up to date"
+            echo "version_behind=false" >> $GITHUB_OUTPUT
+            echo "Local version is up to date"
           fi
       - name: Create issue if behind
         if: steps.check.outputs.version_behind == 'true'

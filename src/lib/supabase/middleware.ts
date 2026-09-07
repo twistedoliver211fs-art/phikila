@@ -1,11 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import {
-  portalRoutes,
   getAllowedRoles,
   isProtectedPath,
   isAuthPath,
 } from "@/lib/auth-config";
+import { pickPrimaryMembership, portalForRole } from "@/lib/membership";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -54,10 +54,9 @@ export async function updateSession(request: NextRequest) {
       .from("school_members")
       .select("role")
       .eq("user_id", user.id)
-      .eq("is_active", true)
-      .limit(1);
+      .eq("is_active", true);
 
-    const userRole = members?.[0]?.role;
+    const userRole = pickPrimaryMembership(members)?.role;
 
     if (!userRole) {
       const url = request.nextUrl.clone();
@@ -68,7 +67,7 @@ export async function updateSession(request: NextRequest) {
     const allowedRoles = getAllowedRoles(pathname);
     if (allowedRoles && !allowedRoles.includes(userRole)) {
       const url = request.nextUrl.clone();
-      url.pathname = portalRoutes[userRole] ?? "/teacher";
+      url.pathname = portalForRole(userRole);
       return NextResponse.redirect(url);
     }
   }

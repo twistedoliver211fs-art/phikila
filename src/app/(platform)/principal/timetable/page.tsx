@@ -466,7 +466,7 @@ export default function PrincipalTimetablePage() {
     (sourceDay: number) => {
       const sourceSlots = classSlots.filter((s) => s.day_of_week === sourceDay);
       setAllSlots((prev) => {
-        let next = prev.filter(
+        const next = prev.filter(
           (s) =>
             s.class_id !== selectedClassId ||
             s.term_id !== selectedTermId ||

@@ -93,7 +93,7 @@ npx tsc --noEmit
 ```bash
 npm run lint
 ```
-Note: There are ~59 existing lint warnings (React hooks rules). Lint is non-blocking in CI.
+Note: There are existing lint *warnings* (React hooks / `any`). Lint is blocking on errors in CI. Tests run in CI.
 
 ### Deploy to Vercel
 ```bash

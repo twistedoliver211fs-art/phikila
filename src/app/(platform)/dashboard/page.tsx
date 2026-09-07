@@ -1,16 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-
-const portalRoutes: Record<string, string> = {
-  super_admin: "/super-admin",
-  principal: "/principal",
-  teacher: "/teacher",
-  timetable_manager: "/teacher",
-  finance: "/finance",
-  admissions_officer: "/admissions-officer",
-  secretary: "/secretary",
-  parent: "/parent",
-};
+import { pickPrimaryMembership, portalForRole } from "@/lib/membership";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -27,15 +17,8 @@ export default async function DashboardPage() {
     .from("school_members")
     .select("role")
     .eq("user_id", user.id)
-    .eq("is_active", true)
-    .limit(1);
+    .eq("is_active", true);
 
-  const role = members?.[0]?.role;
-
-  if (!role) {
-    redirect("/no-access");
-  }
-
-  const route = portalRoutes[role] ?? "/teacher";
-  redirect(route);
+  const role = pickPrimaryMembership(members)?.role;
+  redirect(portalForRole(role));
 }

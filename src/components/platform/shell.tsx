@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/platform/sidebar";
 import { Header } from "@/components/platform/header";
+import { startBackgroundSync } from "@/lib/sync";
 
 interface PlatformShellProps {
   role: string;
@@ -18,6 +19,10 @@ export function PlatformShell({
   children,
 }: PlatformShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    startBackgroundSync();
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-muted/30">

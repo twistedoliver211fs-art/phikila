@@ -30,15 +30,14 @@ function LoginForm() {
 
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
+    const callback = new URL("/callback", window.location.origin);
+    callback.searchParams.set("t", captchaToken);
+    if (safeNext) callback.searchParams.set("next", safeNext);
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/callback${
-          safeNext ? `?next=${encodeURIComponent(safeNext)}` : ""
-        }`,
-        queryParams: {
-          t: captchaToken,
-        },
+        redirectTo: callback.toString(),
       },
     });
   };

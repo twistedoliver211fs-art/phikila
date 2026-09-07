@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.omixdigital.phikila',
   appName: 'Phikila',
-  webDir: '.next',
+  webDir: 'native/www',
   server: {
     androidScheme: 'https',
     url: 'https://phikila-app.vercel.app',

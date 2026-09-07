@@ -107,9 +107,14 @@ export default function TeacherAttendancePage() {
       recorded_by: userId,
     }));
 
-    await supabase.from("attendance_records").upsert(records, {
+    const { error } = await supabase.from("attendance_records").upsert(records, {
       onConflict: "student_id,date",
     });
+
+    if (error) {
+      toast("Could not save attendance. Please try again.");
+      return;
+    }
 
     toast("Attendance saved!");
   };

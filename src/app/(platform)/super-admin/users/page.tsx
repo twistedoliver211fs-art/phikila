@@ -19,11 +19,11 @@ interface Member {
 const ROLES = [
   "principal",
   "teacher",
+  "timetable_manager",
   "finance",
   "admissions_officer",
   "secretary",
   "parent",
-  "super_admin",
 ];
 
 export default function UsersPage() {

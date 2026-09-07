@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
@@ -17,7 +21,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint || true
+      - run: npm run lint
+      - run: npm test
       - run: npx tsc --noEmit
       - run: npm run build
       - name: Verify build output
@@ -34,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: amondnet/vercel-action@v25
-        continue-on-error: true
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -161,7 +166,7 @@ jobs:
       - name: Build release APK
         run: cd android && ./gradlew assembleRelease
       - name: Verify release APK is signed
-        if: always()
+        if: env.KEYSTORE_PRESENT == 'true'
         run: |
           apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk || { echo "Release APK is not signed!"; exit 1; }
       - name: Rename artifacts

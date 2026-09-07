@@ -75,8 +75,6 @@ export function TurnstileWidget({
   useEffect(() => {
     if (!siteKey) return;
 
-    let cleanup: (() => void) | undefined;
-
     const init = async () => {
       try {
         await loadScript();
@@ -115,6 +113,7 @@ export function TurnstileWidget({
 
   return (
     <div
+      ref={containerRef}
       id={id}
       style={{ width: "100%", minHeight: "80px" }}
     />

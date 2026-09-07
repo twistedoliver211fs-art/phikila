@@ -58,7 +58,7 @@ const serwist = new Serwist({
   fallbacks: {
     entries: [
       {
-        url: "/offline",
+        url: "/offline.html",
         matcher: ({ request }) => request.mode === "navigate",
       },
     ],

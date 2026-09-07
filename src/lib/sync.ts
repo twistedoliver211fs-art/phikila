@@ -83,8 +83,11 @@ export async function syncPendingData(): Promise<{ synced: number; failed: numbe
   return { synced, failed };
 }
 
+let backgroundSyncStarted = false;
+
 export function startBackgroundSync() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || backgroundSyncStarted) return;
+  backgroundSyncStarted = true;
 
   // Sync when coming online
   window.addEventListener("online", () => {

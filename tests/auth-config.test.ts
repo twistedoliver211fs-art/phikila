@@ -5,7 +5,6 @@ import {
   isAuthPath,
   portalRoutes,
   routeRoleMap,
-  protectedPaths,
 } from "@/lib/auth-config";
 
 describe("getAllowedRoles", () => {
@@ -138,14 +137,14 @@ describe("portalRoutes", () => {
 
 describe("routeRoleMap completeness", () => {
   it("every route in routeRoleMap has at least one role", () => {
-    for (const [route, roles] of Object.entries(routeRoleMap)) {
+    for (const roles of Object.values(routeRoleMap)) {
       expect(roles.length).toBeGreaterThan(0);
     }
   });
 
   it("super_admin is allowed on all portal routes", () => {
-    for (const [route, roles] of Object.entries(routeRoleMap)) {
-      if (route === "/dashboard") continue;
+    for (const [mappedRoute, roles] of Object.entries(routeRoleMap)) {
+      if (mappedRoute === "/dashboard") continue;
       expect(roles).toContain("super_admin");
     }
   });

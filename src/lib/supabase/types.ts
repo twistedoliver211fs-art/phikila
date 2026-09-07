@@ -275,20 +275,18 @@ export interface Database {
         Row: {
           id: string;
           class_id: string;
-          teacher_id: string;
+          staff_id: string;
           subject_id: string | null;
-          created_at: string;
         };
         Insert: {
           id?: string;
           class_id: string;
-          teacher_id: string;
+          staff_id: string;
           subject_id?: string | null;
-          created_at?: string;
         };
         Update: {
           class_id?: string;
-          teacher_id?: string;
+          staff_id?: string;
           subject_id?: string | null;
         };
       };
@@ -539,9 +537,13 @@ export interface Database {
         Args: Record<string, never>;
         Returns: boolean;
       };
-      get_user_school_id: {
+      get_user_school_ids: {
         Args: Record<string, never>;
-        Returns: string | null;
+        Returns: string;
+      };
+      has_school_role: {
+        Args: { p_school_id: string; p_roles: MemberRole[] };
+        Returns: boolean;
       };
     };
     Enums: {

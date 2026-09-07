@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PlatformShell } from "@/components/platform/shell";
+import { pickPrimaryMembership } from "@/lib/membership";
 
 const roleLabels: Record<string, string> = {
   super_admin: "Super Admin",
@@ -32,10 +33,14 @@ export default async function PlatformLayout({
     .from("school_members")
     .select("role, school_id")
     .eq("user_id", user.id)
-    .eq("is_active", true)
-    .limit(1);
+    .eq("is_active", true);
 
-  const role = members?.[0]?.role ?? "teacher";
+  const primary = pickPrimaryMembership(members);
+  if (!primary) {
+    redirect("/no-access");
+  }
+
+  const role = primary.role;
   const roleLabel = roleLabels[role] ?? "User";
 
   return (

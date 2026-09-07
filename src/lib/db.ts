@@ -89,7 +89,8 @@ export async function saveAttendance(record: OfflineAttendance) {
 
 export async function getUnsyncedAttendance() {
   const db = await getDB();
-  return db.getAllFromIndex("attendance", "by-synced", IDBKeyRange.only(0));
+  const all = await db.getAll("attendance");
+  return all.filter((record) => record.synced !== true && record.synced !== 1);
 }
 
 export async function markAttendanceSynced(ids: string[]) {
@@ -98,7 +99,7 @@ export async function markAttendanceSynced(ids: string[]) {
   for (const id of ids) {
     const record = await tx.store.get(id);
     if (record) {
-      record.synced = 1;
+      record.synced = true;
       await tx.store.put(record);
     }
   }
@@ -114,7 +115,8 @@ export async function saveMark(record: OfflineMark) {
 
 export async function getUnsyncedMarks() {
   const db = await getDB();
-  return db.getAllFromIndex("marks", "by-synced", IDBKeyRange.only(0));
+  const all = await db.getAll("marks");
+  return all.filter((record) => record.synced !== true && record.synced !== 1);
 }
 
 export async function markMarksSynced(ids: string[]) {
@@ -123,7 +125,7 @@ export async function markMarksSynced(ids: string[]) {
   for (const id of ids) {
     const record = await tx.store.get(id);
     if (record) {
-      record.synced = 1;
+      record.synced = true;
       await tx.store.put(record);
     }
   }

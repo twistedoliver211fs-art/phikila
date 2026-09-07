@@ -46,5 +46,9 @@ export function isProtectedPath(pathname: string): boolean {
 }
 
 export function isAuthPath(pathname: string): boolean {
-  return pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/callback");
+  return (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/callback")
+  );
 }
