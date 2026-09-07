@@ -83,24 +83,41 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           echo "Checking if demo user exists..."
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          USER_RESPONSE=$(curl -s \
             -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users?email=demo@phikila.app")
           
-          if [ "$RESPONSE" = "200" ]; then
-            echo "Demo user already exists"
-          else
+          USER_COUNT=$(echo "$USER_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('users',[])))" 2>/dev/null || echo "0")
+          
+          if [ "$USER_COUNT" = "0" ]; then
             echo "Creating demo user..."
-            curl -s -X POST \
+            CREATE_RESPONSE=$(curl -s -X POST \
               -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
               -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
               -H "Content-Type: application/json" \
               -d '{"email":"demo@phikila.app","password":"Demo1234!","email_confirm":true}' \
-              "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users"
-            echo ""
-            echo "Demo user created"
+              "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users")
+            echo "Create response: $CREATE_RESPONSE"
+          else
+            echo "Demo user exists, updating password..."
+            USER_ID=$(echo "$USER_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['users'][0]['id'])" 2>/dev/null)
+            UPDATE_RESPONSE=$(curl -s -X PUT \
+              -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"password":"Demo1234!"}' \
+              "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/admin/users/$USER_ID")
+            echo "Update response: $UPDATE_RESPONSE"
           fi
+          
+          echo "Verifying auth works..."
+          AUTH_RESPONSE=$(curl -s -X POST \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"demo@phikila.app","password":"Demo1234!"}' \
+            "https://pgiytpbrnyxnnfupvaiv.supabase.co/auth/v1/token?grant_type=password")
+          echo "Auth response: $(echo "$AUTH_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if 'access_token' in d else d)" 2>/dev/null || echo "$AUTH_RESPONSE")"
 
       - name: Build and start app
         env:
