@@ -13,6 +13,7 @@ THUMBNAIL="$OUTPUT_DIR/thumbnail.jpg"
 R2_BUCKET="phikila-demo"
 R2_KEY="demo/phikila-demo-$(date +%Y%m%d).mp4"
 R2_THUMB_KEY="demo/thumbnail-$(date +%Y%m%d).jpg"
+R2_PUBLIC_URL="${R2_PUBLIC_URL:-https://pub-4cad27e8f2764072a35726cc9af64723.r2.dev}"
 
 echo "☁️  Uploading demo video to Cloudflare R2"
 echo "================================"

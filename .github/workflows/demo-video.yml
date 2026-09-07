@@ -13,7 +13,7 @@ on:
 env:
   SITE_URL: https://phikila-app.vercel.app
   R2_BUCKET: phikila-demo
-  R2_PUBLIC_URL: https://pub-3cd35e42e7e61aa4a6dfc0aa3ed42ca2.r2.dev
+  R2_PUBLIC_URL: https://pub-4cad27e8f2764072a35726cc9af64723.r2.dev
 
 jobs:
   build-demo-video:
