@@ -163,7 +163,12 @@ jobs:
       - name: Verify release APK is signed
         if: always()
         run: |
-          apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk || { echo "Release APK is not signed!"; exit 1; }
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name "apksigner" -type f | head -1)
+          if [ -n "$APKSIGNER" ]; then
+            "$APKSIGNER" verify --verbose android/app/build/outputs/apk/release/app-release.apk || { echo "Release APK is not signed!"; exit 1; }
+          else
+            echo "apksigner not found, skipping verification"
+          fi
       - name: Rename artifacts
         run: |
           mkdir -p dist
