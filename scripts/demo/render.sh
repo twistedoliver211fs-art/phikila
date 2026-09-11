@@ -1,5 +1,5 @@
 #!/bin/bash
-# FFmpeg Render Pipeline for Phikila Demo Video
+# FFmpeg Render Pipeline for Decimal Demo Video
 # Combines Playwright recorded video + TTS audio + captions into final 1080p video
 #
 # Usage: bash scripts/demo/render.sh
@@ -12,7 +12,7 @@ AUDIO_DIR="$OUTPUT_DIR/audio"
 CAPTIONS="$OUTPUT_DIR/captions.srt"
 TIMELINE="$OUTPUT_DIR/timeline.json"
 METADATA="$OUTPUT_DIR/metadata.json"
-FINAL_OUTPUT="$OUTPUT_DIR/phikila-demo.mp4"
+FINAL_OUTPUT="$OUTPUT_DIR/decimal-demo.mp4"
 
 # Video settings
 WIDTH=1920
@@ -21,7 +21,7 @@ FPS=30
 BITRATE="5M"
 AUDIO_BITRATE="192k"
 
-echo "🎬 Phikila Demo Video Renderer"
+echo "🎬 Decimal Demo Video Renderer"
 echo "================================"
 
 # Check dependencies
@@ -133,10 +133,10 @@ if [ -n "$DURATION" ] && [ "$DURATION" -gt 3 ]; then
     -preset medium \
     -crf 23 \
     -c:a aac \
-    "$OUTPUT_DIR/phikila-demo-final.mp4" \
+    "$OUTPUT_DIR/decimal-demo-final.mp4" \
     2>/dev/null
 
-  mv "$OUTPUT_DIR/phikila-demo-final.mp4" "$FINAL_OUTPUT"
+  mv "$OUTPUT_DIR/decimal-demo-final.mp4" "$FINAL_OUTPUT"
   echo "   ✅ Fade effects applied"
 else
   echo "   ⚠️  Video too short for fades, skipping"

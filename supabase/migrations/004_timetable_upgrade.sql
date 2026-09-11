@@ -1,4 +1,4 @@
--- Phikila Timetable System Upgrade
+-- Decimal Timetable System Upgrade
 -- Run after 001_initial_schema.sql, 002_exams_results.sql, 003_timetable_manager.sql
 
 -- ============================================================

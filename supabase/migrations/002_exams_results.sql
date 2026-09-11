@@ -1,4 +1,4 @@
--- Phikila: Exams & Results system
+-- Decimal: Exams & Results system
 -- Run after 001_initial_schema.sql
 
 -- ============================================================

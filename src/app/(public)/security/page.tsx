@@ -4,8 +4,8 @@ import { Shield, Lock, Eye, Key, FileCheck, AlertTriangle, Mail, MessageCircle }
 import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
-  title: "Security — Phikila",
-  description: "How Phikila protects your school's data",
+  title: "Security — Decimal",
+  description: "How Decimal protects your school's data",
 };
 
 export default function SecurityPage() {
@@ -31,7 +31,7 @@ export default function SecurityPage() {
             <h2 className="text-lg font-semibold text-foreground">Encryption</h2>
           </div>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p><strong className="text-foreground">In Transit:</strong> All data is encrypted using TLS 1.3. Every connection to Phikila is HTTPS-only with HSTS enforcement.</p>
+            <p><strong className="text-foreground">In Transit:</strong> All data is encrypted using TLS 1.3. Every connection to Decimal is HTTPS-only with HSTS enforcement.</p>
             <p><strong className="text-foreground">At Rest:</strong> All data is stored in Supabase (PostgreSQL) with encryption at rest using AES-256.</p>
             <p><strong className="text-foreground">Offline Data:</strong> Local data cached on devices uses browser-level encryption via IndexedDB. Data is cleared on logout.</p>
           </div>
@@ -44,7 +44,7 @@ export default function SecurityPage() {
             <h2 className="text-lg font-semibold text-foreground">Authentication</h2>
           </div>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p><strong className="text-foreground">Google OAuth:</strong> We use Google for authentication. Phikila never stores passwords — your credentials are handled entirely by Google.</p>
+            <p><strong className="text-foreground">Google OAuth:</strong> We use Google for authentication. Decimal never stores passwords — your credentials are handled entirely by Google.</p>
             <p><strong className="text-foreground">Session Management:</strong> Sessions are managed by Supabase Auth with secure, HTTP-only cookies.</p>
             <p><strong className="text-foreground">Captcha:</strong> Cloudflare Turnstile protects against automated attacks during login.</p>
           </div>
@@ -106,7 +106,7 @@ export default function SecurityPage() {
             <h2 className="text-lg font-semibold text-foreground">Data Processing Agreement</h2>
           </div>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p><strong className="text-foreground">Data Controller:</strong> The school (you) is the data controller. Phikila (Omix Digital Solutions) is the data processor.</p>
+            <p><strong className="text-foreground">Data Controller:</strong> The school (you) is the data controller. Decimal (Omix Digital Solutions) is the data processor.</p>
             <p><strong className="text-foreground">Purpose:</strong> Data is processed solely for the purpose of providing school management services as directed by the school.</p>
             <p><strong className="text-foreground">Sub-processors:</strong> Supabase (database hosting), Vercel (app hosting), Google (authentication). All sub-processors are GDPR compliant.</p>
             <p><strong className="text-foreground">Data Deletion:</strong> Schools can request complete data deletion at any time. Data is permanently removed within 30 days of request.</p>

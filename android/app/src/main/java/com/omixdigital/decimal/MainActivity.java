@@ -1,4 +1,4 @@
-package com.omixdigital.phikila;
+package com.omixdigital.decimal;
 
 import com.getcapacitor.BridgeActivity;
 

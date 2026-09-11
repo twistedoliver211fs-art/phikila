@@ -1,12 +1,12 @@
-# Phikila
+# Decimal
 
 **School management for clearer, faster, and more connected school operations.**
 
-[![Live app](https://img.shields.io/badge/live%20app-phikila--app.vercel.app-4F46E5?style=flat-square)](https://phikila-app.vercel.app)
+[![Live app](https://img.shields.io/badge/live%20app-decimal--app.vercel.app-4F46E5?style=flat-square)](https://decimal-app.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
 
-Phikila is a multi-school management platform for administrators, teachers, finance teams, admissions officers, secretaries, and parents. It provides role-based portals for managing students, staff, attendance, fees, admissions, exams, timetables, announcements, and notifications.
+Decimal is a multi-school management platform for administrators, teachers, finance teams, admissions officers, secretaries, and parents. It provides role-based portals for managing students, staff, attendance, fees, admissions, exams, timetables, announcements, and notifications.
 
 The application is available as a responsive web app and can also be packaged as a Progressive Web App, Android application, or desktop application.
 
@@ -48,7 +48,7 @@ The application is available as a responsive web app and can also be packaged as
 From the repository root:
 
 ```bash
-cd phikila-app
+cd decimal-app
 npm install
 cp .env.local.example .env.local
 ```
@@ -101,7 +101,7 @@ Access is controlled by the authenticated user's school membership and role. Dat
 ## Project structure
 
 ```text
-phikila-app/
+decimal-app/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/          # Login, registration, and auth callbacks
@@ -189,6 +189,6 @@ The project-specific development conventions are documented in [`AGENTS.md`](AGE
 
 ## Links
 
-- [Live application](https://phikila-app.vercel.app)
+- [Live application](https://decimal-app.vercel.app)
 - [Full setup and operations documentation](DOCUMENTATION.md)
-- [GitHub repository](https://github.com/twistedoliver211fs-art/phikila)
+- [GitHub repository](https://github.com/twistedoliver211fs-art/decimal)

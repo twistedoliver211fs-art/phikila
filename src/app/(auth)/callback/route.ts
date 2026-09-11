@@ -1,45 +1,58 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { verifyTurnstileToken } from "@/lib/turnstile";
+import { portalRoutes, resolvePortalRole } from "@/lib/auth-config";
 
-const portalRoutes: Record<string, string> = {
-  super_admin: "/super-admin",
-  principal: "/principal",
-  teacher: "/teacher",
-  timetable_manager: "/teacher",
-  finance: "/finance",
-  admissions_officer: "/admissions-officer",
-  secretary: "/secretary",
-  parent: "/parent",
-};
+async function resolveAndRedirect(
+  supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
+  userId: string,
+  origin: string
+) {
+  const { data: members } = await supabase
+    .from("school_members")
+    .select("role, school_id")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .order("joined_at", { ascending: true });
+
+  if (!members || members.length === 0) {
+    return NextResponse.redirect(`${origin}/no-access`);
+  }
+
+  if (members.length === 1) {
+    const role = members[0].role;
+    return NextResponse.redirect(`${origin}${portalRoutes[role] ?? "/teacher"}`);
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("active_school_id")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const cookieStore = await cookies();
+  const preferredRole =
+    cookieStore.get("decimal_active_role")?.value ?? null;
+  const activeRole = resolvePortalRole(
+    members,
+    profile?.active_school_id,
+    preferredRole
+  );
+
+  if (activeRole) {
+    return NextResponse.redirect(`${origin}${portalRoutes[activeRole] ?? "/teacher"}`);
+  }
+
+  return NextResponse.redirect(`${origin}/school-picker`);
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const turnstileToken = searchParams.get("t");
 
-  // Optional explicit destination (e.g. /register/school when signing in as
-  // part of school registration). Only relative paths starting with a single
-  // "/" are allowed, to prevent open redirects.
   const next = searchParams.get("next");
   const safeNext =
     next && next.startsWith("/") && !next.startsWith("//") ? next : null;
-
-  // Verify Turnstile token if present. `__no_captcha__` is only accepted when
-  // the deployment has no site key configured (local dev); if a site key is
-  // configured, it means the captcha was bypassed and the sign-in is rejected.
-  const captchaConfigured = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-
-  if (turnstileToken && turnstileToken !== "__no_captcha__") {
-    const valid = await verifyTurnstileToken(turnstileToken);
-    if (!valid) {
-      return NextResponse.redirect(`${origin}/login?error=captcha_failed`);
-    }
-  } else if (captchaConfigured) {
-    // Token missing or the placeholder "__no_captcha__" while captcha is
-    // required — treat it as a failed security check.
-    return NextResponse.redirect(`${origin}/login?error=captcha_failed`);
-  }
 
   if (code) {
     const supabase = await createClient();
@@ -51,28 +64,39 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
+        const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+        if (aalData?.nextLevel === "aal2" && aalData?.currentLevel !== "aal2") {
+          return NextResponse.redirect(`${origin}/mfa/verify`)
+        }
+
         if (safeNext) {
-          // The destination was chosen before signing in (e.g. the school
-          // registration flow) — skip the role-based portal redirect.
           return NextResponse.redirect(`${origin}${safeNext}`);
         }
 
-        const { data: members } = await supabase
-          .from("school_members")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("is_active", true)
-          .limit(1);
-
-        const role = members?.[0]?.role;
-
-        if (role) {
-          return NextResponse.redirect(`${origin}${portalRoutes[role] ?? "/teacher"}`);
-        }
-
-        return NextResponse.redirect(`${origin}/no-access`);
+        return await resolveAndRedirect(supabase, user.id, origin);
       }
     }
+  }
+
+  // No code — check for an existing session (email/password login).
+  // The client calls router.push("/callback") after signInWithPassword();
+  // the session is already in cookies, so we can resolve directly.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aalData?.nextLevel === "aal2" && aalData?.currentLevel !== "aal2") {
+      return NextResponse.redirect(`${origin}/mfa/verify`)
+    }
+
+    if (safeNext) {
+      return NextResponse.redirect(`${origin}${safeNext}`);
+    }
+
+    return await resolveAndRedirect(supabase, user.id, origin);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth_failed`);

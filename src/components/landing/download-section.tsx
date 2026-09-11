@@ -31,10 +31,10 @@ export function DownloadSection() {
         <AnimatedSection variants={fadeUp}>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary">
-              Install Phikila
+              Install Decimal
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Take Phikila everywhere
+              Take Decimal everywhere
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
               Install on any device — phone, tablet, or computer. Offline
@@ -64,7 +64,7 @@ export function DownloadSection() {
             <Link href="/download">
               <Button size="lg" className="text-base">
                 <Download />
-                Download Phikila
+                Download Decimal
               </Button>
             </Link>
             <a href={WEB_APP_URL} target="_blank" rel="noopener noreferrer">

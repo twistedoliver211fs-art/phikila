@@ -1,12 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.omixdigital.phikila',
-  appName: 'Phikila',
+  appId: 'com.omixdigital.decimal',
+  appName: 'Decimal',
   webDir: '.next',
   server: {
     androidScheme: 'https',
-    url: 'https://phikila-app.vercel.app',
+    url: 'https://decimal-app.vercel.app',
     cleartext: false,
   },
   android: {

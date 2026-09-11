@@ -16,21 +16,21 @@ import {
 import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
-  title: "Download Phikila — Android, Windows, Linux & Web App",
+  title: "Download Decimal — Android, Windows, Linux & Web App",
   description:
-    "Install Phikila on any device: Android APK, Windows installer, Linux .deb or AppImage, or the installable PWA. Verified SHA-256 checksums for every build.",
+    "Install Decimal on any device: Android APK, Windows installer, Linux .deb or AppImage, or the installable PWA. Verified SHA-256 checksums for every build.",
   alternates: { canonical: "/download" },
   openGraph: {
-    title: "Download Phikila",
+    title: "Download Decimal",
     description:
-      "Phikila for Android, Windows, Linux and the web. Verified downloads with SHA-256 checksums.",
+      "Decimal for Android, Windows, Linux and the web. Verified downloads with SHA-256 checksums.",
     url: "/download",
     type: "website",
   },
 };
 
 const REPO_RELEASES_API =
-  "https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest";
+  "https://api.github.com/repos/twistedoliver211fs-art/decimal/releases/latest";
 
 export default function DownloadPage() {
   // QR code points at the recommended Android asset — derived from the
@@ -48,7 +48,7 @@ export default function DownloadPage() {
           <Download className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Download Phikila
+          Download Decimal
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
           One school OS, every device. Pick your platform below — Android,
@@ -151,7 +151,7 @@ export default function DownloadPage() {
             <p className="mt-3 text-xs text-muted-foreground">
               Example:{" "}
               <code className="font-mono">
-                sha256sum phikila-v{RELEASE.version}-android-debug.apk
+                sha256sum decimal-v{RELEASE.version}-android-debug.apk
               </code>{" "}
               then compare with the matching line in the file.
             </p>

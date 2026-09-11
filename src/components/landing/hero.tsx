@@ -30,23 +30,17 @@ export function Hero() {
       {/* Hero Content */}
       <div
         ref={heroRef}
-        className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20 lg:px-8 lg:py-28"
+        className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32"
       >
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="max-w-3xl"
+          className="max-w-5xl"
         >
-          <motion.p
-            variants={staggerItem}
-            className="text-sm font-semibold uppercase tracking-widest text-primary mb-4"
-          >
-            The School Management Platform
-          </motion.p>
           <motion.h1
             variants={staggerItem}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]"
+            className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]"
           >
             Run your school
             <br />
@@ -67,7 +61,7 @@ export function Hero() {
               <Button variant="glow" size="lg" className="text-base px-6">Get Started</Button>
             </Link>
             <Link href="/demo">
-              <Button variant="outline" size="lg" className="text-base px-6 hover:border-primary/40 hover:text-primary">Request a Demo</Button>
+              <Button variant="outline" size="lg" className="text-base px-6 border-white/30 text-white hover:bg-white/10">Request a Demo</Button>
             </Link>
           </motion.div>
         </motion.div>
@@ -79,7 +73,7 @@ export function Hero() {
           animate={dashInView ? "visible" : "hidden"}
           variants={slideInRight}
           transition={{ duration: 0.7, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-          className="mt-16 rounded-xl border border-border bg-card p-1 shadow-2xl shadow-primary/5"
+          className="mt-16 rounded-xl border border-border bg-card p-1 shadow-2xl shadow-primary/5 hover:shadow-3xl hover:shadow-primary/20 transition-shadow duration-500"
         >
           <motion.div
             variants={fadeUp}
@@ -91,7 +85,7 @@ export function Hero() {
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
               <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
               <span className="ml-2 text-xs text-muted-foreground">
-                Phikila Dashboard
+                Decimal Dashboard
               </span>
             </div>
 

@@ -57,16 +57,13 @@ export function Features() {
   return (
     <section
       id="features"
-      className="relative isolate overflow-hidden bg-gradient-to-b from-primary/[0.04] via-muted/40 to-background py-20 sm:py-28"
+      className="relative isolate overflow-hidden bg-gradient-to-b from-primary/[0.04] via-muted/40 to-background py-24 sm:py-32"
     >
       <Aurora className="opacity-70" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection variants={fadeUp}>
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">
-              Capabilities
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
               Everything your school needs
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
@@ -78,9 +75,9 @@ export function Features() {
         <StaggerGrid className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature) => (
             <StaggerItem key={feature.title}>
-              <div className="group rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+              <div className="group rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 hover:bg-gradient-to-b hover:from-primary/5 hover:to-transparent">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/15">
-                  <feature.icon className="h-5 w-5 text-primary" />
+                  <feature.icon className="h-6 w-6 text-primary transition-colors duration-300 group-hover:text-primary" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-foreground">
                   {feature.title}
@@ -91,7 +88,7 @@ export function Features() {
                       key={item}
                       className="text-sm text-muted-foreground flex items-center gap-2"
                     >
-                      <span className="h-1 w-1 rounded-full bg-primary/40" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
                       {item}
                     </li>
                   ))}

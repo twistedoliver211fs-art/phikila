@@ -1,16 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "@/components/platform/theme-provider";
 import { Toaster } from "@/components/platform/toast";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Phikila — The School Management Platform",
+  title: "Decimal — The School Management Platform",
   description:
     "Run your school with clarity. Administration, academics, attendance, finance, admissions, communication and intelligent scheduling in one platform.",
   other: {
@@ -20,7 +16,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Phikila",
+    title: "Decimal",
   },
   formatDetection: {
     telephone: false,
@@ -43,12 +39,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} h-full`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/app-icon-180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Phikila" />
+        <meta name="apple-mobile-web-app-title" content="Decimal" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <ThemeProvider>{children}</ThemeProvider>

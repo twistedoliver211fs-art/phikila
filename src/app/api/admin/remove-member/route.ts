@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function DELETE(request: Request) {
+  const rl = await rateLimit(request, { maxRequests: 10, windowMs: 60_000, prefix: "admin:remove-member" });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const supabase = await createClient();
 
   const {
@@ -20,11 +26,9 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "memberId is required" }, { status: 400 });
   }
 
-  // Check if user is super_admin
   const { data: isAdmin } = await supabase.rpc("is_super_admin");
 
   if (!isAdmin) {
-    // Check if user is a principal of the member's school
     const { data: member } = await supabase
       .from("school_members")
       .select("school_id")

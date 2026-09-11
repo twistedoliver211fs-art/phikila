@@ -1,6 +1,6 @@
 {
-  "name": "phikila-app",
-  "version": "0.2.0",
+  "name": "decimal-app",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "supabase:types": "npx supabase gen types typescript --project-id phikila-app > src/lib/supabase/types.ts",
+    "supabase:types": "npx supabase gen types typescript --project-id decimal-app > src/lib/supabase/types.ts",
     "supabase:types:local": "npx supabase gen types typescript --local > src/lib/supabase/types.ts"
   },
   "dependencies": {
@@ -25,9 +25,11 @@
     "@serwist/next": "^9.5.12",
     "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.115.0",
+    "@upstash/redis": "^1.38.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.2.0",
+    "geist": "^1.7.2",
     "html2canvas": "^1.4.1",
     "idb": "^8.0.3",
     "jspdf": "^4.2.1",

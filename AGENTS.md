@@ -10,15 +10,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ---
 
-# Phikila — Agent Guide
+# Decimal — Agent Guide
 
 ## Project Overview
 
 Multi-school management platform. Next.js 16 App Router + Supabase + Vercel.
 Role-based portals: super_admin, principal, teacher, finance, admissions_officer, secretary, parent.
 
-**Repo:** `https://github.com/twistedoliver211fs-art/phikila`
-**Live:** `https://phikila-app.vercel.app`
+**Repo:** `https://github.com/twistedoliver211fs-art/decimal`
+**Live:** `https://decimal-app.vercel.app`
 **Publisher:** Omix Digital Solutions (`omixsystems.store`)
 
 ---
@@ -74,7 +74,7 @@ NEVER: `<Button asChild><Link>...</Link></Button>`
 
 ### Local Development
 ```bash
-cd phikila-app
+cd decimal-app
 npm run dev          # starts dev server on :3000
 ```
 
@@ -133,12 +133,12 @@ git push origin main && git push origin v0.2.0
 ### Artifacts per release:
 | Platform | File |
 |----------|------|
-| Android | `phikila-vX.Y.Z-android-debug.apk` |
-| Android | `phikila-vX.Y.Z-android-release.apk` |
-| Linux | `phikila-vX.Y.Z-linux-x86_64.deb` |
-| Linux | `phikila-vX.Y.Z-linux-x86_64.AppImage` |
-| Windows | `phikila-vX.Y.Z-windows-x64.exe` |
-| Windows | `phikila-vX.Y.Z-windows-x64.msi` |
+| Android | `decimal-vX.Y.Z-android-debug.apk` |
+| Android | `decimal-vX.Y.Z-android-release.apk` |
+| Linux | `decimal-vX.Y.Z-linux-x86_64.deb` |
+| Linux | `decimal-vX.Y.Z-linux-x86_64.AppImage` |
+| Windows | `decimal-vX.Y.Z-windows-x64.exe` |
+| Windows | `decimal-vX.Y.Z-windows-x64.msi` |
 | All | `SHA256SUMS.txt` |
 
 ---
@@ -147,8 +147,8 @@ git push origin main && git push origin v0.2.0
 
 ### Setup
 - Config: `capacitor.config.ts`
-- App ID: `com.omixdigital.phikila`
-- Web URL: `https://phikila-app.vercel.app`
+- App ID: `com.omixdigital.decimal`
+- Web URL: `https://decimal-app.vercel.app`
 
 ### Build locally (requires JDK 21)
 ```bash
@@ -178,7 +178,7 @@ This patches `node_modules/@capacitor/*/android/build.gradle` to use JDK 17.
 
 ### Setup
 - Config: `src-tauri/tauri.conf.json`
-- App ID: `com.omixdigital.phikila`
+- App ID: `com.omixdigital.decimal`
 - Version: managed in `tauri.conf.json` (must match `package.json`)
 
 ### Build locally (requires Rust)
@@ -253,7 +253,7 @@ scripts/demo/
 | `CLOUDFLARE_R2_TOKEN` | R2 API token with write access |
 
 ### Required R2 Bucket:
-- Bucket name: `phikila-demo`
+- Bucket name: `decimal-demo`
 - Public access enabled (r2.dev subdomain)
 
 ---
@@ -264,7 +264,7 @@ scripts/demo/
 ```bash
 gh secret set KEYSTORE_BASE64 < /tmp/keystore-base64.txt
 gh secret set KEYSTORE_PASSWORD --body "your-password"
-gh secret set KEY_ALIAS --body "phikila"
+gh secret set KEY_ALIAS --body "decimal"
 gh secret set KEY_PASSWORD --body "your-password"
 
 # For Vercel deploy:
@@ -274,7 +274,7 @@ gh secret set VERCEL_PROJECT_ID --body "your-project-id"
 ```
 
 ### Via GitHub web UI:
-Go to `https://github.com/twistedoliver211fs-art/phikila/settings/secrets/actions` and add each secret manually.
+Go to `https://github.com/twistedoliver211fs-art/decimal/settings/secrets/actions` and add each secret manually.
 
 ---
 
@@ -295,7 +295,7 @@ Go to `https://github.com/twistedoliver211fs-art/phikila/settings/secrets/action
 ## Key Files Reference
 
 ```
-phikila-app/
+decimal-app/
 ├── AGENTS.md                    # This file
 ├── capacitor.config.ts          # Capacitor Android config
 ├── next.config.ts               # Next.js + serwist config

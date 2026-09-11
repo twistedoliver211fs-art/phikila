@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Phikila</string>
-    <string name="title_activity_main">Phikila</string>
-    <string name="package_name">com.omixdigital.phikila</string>
-    <string name="custom_url_scheme">com.omixdigital.phikila</string>
+    <string name="app_name">Decimal</string>
+    <string name="title_activity_main">Decimal</string>
+    <string name="package_name">com.omixdigital.decimal</string>
+    <string name="custom_url_scheme">com.omixdigital.decimal</string>
 </resources>

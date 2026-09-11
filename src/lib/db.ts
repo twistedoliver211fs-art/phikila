@@ -1,18 +1,21 @@
 import { openDB, type IDBPDatabase } from "idb";
 
-const DB_NAME = "phikila-offline";
-const DB_VERSION = 1;
+const DB_NAME = "decimal-offline";
+const DB_VERSION = 2;
 
 export interface OfflineAttendance {
   id: string;
   school_id: string;
-  class_id: string;
+  class_id: string | null;
   date: string;
   student_id: string;
   status: "present" | "absent" | "late" | "excused";
+  notes?: string | null;
   recorded_by: string;
   synced: boolean;
   created_at: string;
+  /** ISO timestamp of the last on-device edit; used for sync conflict detection. */
+  _synced_at: string;
 }
 
 export interface OfflineMark {
@@ -25,6 +28,8 @@ export interface OfflineMark {
   recorded_by: string;
   synced: boolean;
   created_at: string;
+  /** ISO timestamp of the last on-device edit; used for sync conflict detection. */
+  _synced_at: string;
 }
 
 export interface SyncQueueItem {
@@ -41,7 +46,7 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 function getDB() {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, oldVersion) {
         // Attendance store
         if (!db.objectStoreNames.contains("attendance")) {
           const attendanceStore = db.createObjectStore("attendance", { keyPath: "id" });
@@ -74,6 +79,13 @@ function getDB() {
           const syncStore = db.createObjectStore("sync-queue", { keyPath: "id" });
           syncStore.createIndex("by-created", "created_at");
         }
+
+        // v2: conflicts reported by the server during sync
+        if (oldVersion < 2 && !db.objectStoreNames.contains("conflicts")) {
+          const conflictsStore = db.createObjectStore("conflicts", { keyPath: "id" });
+          conflictsStore.createIndex("by-table", "table");
+          conflictsStore.createIndex("by-created", "created_at");
+        }
       },
     });
   }
@@ -83,8 +95,9 @@ function getDB() {
 // Attendance operations
 export async function saveAttendance(record: OfflineAttendance) {
   const db = await getDB();
-  await db.put("attendance", record);
-  await addToSyncQueue("attendance", "insert", record as unknown as Record<string, unknown>);
+  const stamped = { ...record, _synced_at: new Date().toISOString() };
+  await db.put("attendance", stamped);
+  await addToSyncQueue("attendance", "insert", stamped as unknown as Record<string, unknown>);
 }
 
 export async function getUnsyncedAttendance() {
@@ -108,8 +121,9 @@ export async function markAttendanceSynced(ids: string[]) {
 // Marks operations
 export async function saveMark(record: OfflineMark) {
   const db = await getDB();
-  await db.put("marks", record);
-  await addToSyncQueue("marks", "insert", record as unknown as Record<string, unknown>);
+  const stamped = { ...record, _synced_at: new Date().toISOString() };
+  await db.put("marks", stamped);
+  await addToSyncQueue("marks", "insert", stamped as unknown as Record<string, unknown>);
 }
 
 export async function getUnsyncedMarks() {
@@ -160,6 +174,40 @@ export async function cacheStudents(data: Record<string, unknown>[]) {
 export async function getCachedStudents() {
   const db = await getDB();
   return db.getAll("students");
+}
+
+// Conflicts (server-reported during sync)
+export interface OfflineConflict {
+  id: string;
+  table: "attendance" | "marks";
+  key: Record<string, string>;
+  client: Record<string, unknown>;
+  server: Record<string, unknown>;
+  created_at: string;
+}
+
+export async function saveConflict(conflict: Omit<OfflineConflict, "id" | "created_at">) {
+  const db = await getDB();
+  await db.put("conflicts", {
+    ...conflict,
+    id: `${conflict.table}-${Object.values(conflict.key).join("-")}`,
+    created_at: new Date().toISOString(),
+  });
+}
+
+export async function getConflicts(): Promise<OfflineConflict[]> {
+  const db = await getDB();
+  return db.getAll("conflicts");
+}
+
+export async function getConflictCount(): Promise<number> {
+  const db = await getDB();
+  return db.count("conflicts");
+}
+
+export async function removeConflict(id: string) {
+  const db = await getDB();
+  await db.delete("conflicts", id);
 }
 
 // Sync queue

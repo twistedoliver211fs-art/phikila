@@ -55,12 +55,12 @@ export function SiteHeader() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo.jpeg"
-            alt="Phikila"
+            alt="Decimal"
             width={28}
             height={28}
             className="rounded-md"
           />
-          <span className="text-base font-bold tracking-tight">Phikila</span>
+          <span className="text-base font-bold tracking-tight">Decimal</span>
         </Link>
 
         {/* Desktop nav */}

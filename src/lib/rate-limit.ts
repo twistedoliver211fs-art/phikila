@@ -1,9 +1,4 @@
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const store = new Map<string, RateLimitEntry>();
+import redis from "@/lib/redis";
 
 function getClientIP(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -13,43 +8,52 @@ function getClientIP(request: Request): string {
   return "unknown";
 }
 
-export function checkRateLimit(
-  key: string,
-  maxRequests: number,
-  windowMs: number
-): { allowed: boolean; remaining: number; resetAt: number } {
-  const now = Date.now();
-  const entry = store.get(key);
-
-  if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs };
-  }
-
-  if (entry.count >= maxRequests) {
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
-  }
-
-  entry.count++;
-  return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
+export interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetAt: number;
 }
 
-export function rateLimit(
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Redis timeout")), ms)
+    ),
+  ]);
+}
+
+const REDIS_TIMEOUT_MS = 3000;
+
+export async function rateLimit(
   request: Request,
   opts: { maxRequests: number; windowMs: number; prefix?: string }
-): { allowed: boolean; remaining: number; resetAt: number } {
+): Promise<RateLimitResult> {
   const ip = getClientIP(request);
   const prefix = opts.prefix ?? "global";
-  const key = `${prefix}:${ip}`;
-  return checkRateLimit(key, opts.maxRequests, opts.windowMs);
-}
+  const key = `rl:${prefix}:${ip}`;
+  const windowSec = Math.ceil(opts.windowMs / 1000);
 
-// Cleanup stale entries every 5 minutes
-if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of store.entries()) {
-      if (now > entry.resetAt) store.delete(key);
+  try {
+    const current = await withTimeout(redis.incr(key), REDIS_TIMEOUT_MS);
+    if (current === 1) {
+      await withTimeout(redis.expire(key, windowSec), REDIS_TIMEOUT_MS);
     }
-  }, 5 * 60 * 1000);
+
+    const ttl = await withTimeout(redis.ttl(key), REDIS_TIMEOUT_MS);
+    const resetAt = Date.now() + ttl * 1000;
+
+    if (current > opts.maxRequests) {
+      return { allowed: false, remaining: 0, resetAt };
+    }
+
+    return {
+      allowed: true,
+      remaining: opts.maxRequests - current,
+      resetAt,
+    };
+  } catch {
+    // If Redis is down or unreachable, allow the request (fail open)
+    return { allowed: true, remaining: opts.maxRequests - 1, resetAt: Date.now() + opts.windowMs };
+  }
 }

@@ -267,17 +267,26 @@ create policy "subjects: admin/principal can manage"
   );
 
 -- ============================================================
--- terms
+-- terms  (no school_id column — derive via academic_years)
 -- ============================================================
 create policy "terms: members can view"
   on terms for select
-  using (school_id in (select get_user_school_ids()) or is_super_admin());
+  using (
+    terms.academic_year_id in (
+      select ay.id
+      from academic_years ay
+      where ay.school_id in (select get_user_school_ids())
+    )
+    or is_super_admin()
+  );
 
 create policy "terms: admin/principal can manage"
   on terms for all
   using (
-    school_id in (
-      select sm.school_id from school_members sm
+    terms.academic_year_id in (
+      select ay.id
+      from academic_years ay
+      join school_members sm on sm.school_id = ay.school_id
       where sm.user_id = auth.uid()
         and sm.role in ('super_admin', 'principal')
         and sm.is_active = true

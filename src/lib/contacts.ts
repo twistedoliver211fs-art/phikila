@@ -1,8 +1,8 @@
 /**
- * Official contact channels for Phikila / Omix Digital Solutions.
+ * Official contact channels for Decimal / Omix Digital Solutions.
  * Single source of truth — import from here instead of hardcoding.
  *
- * NOTE: There is deliberately no @phikila.app email. All inbound mail
+ * NOTE: There is deliberately no @decimal.app email. All inbound mail
  * goes to omixsystems@gmail.com (general + security).
  */
 

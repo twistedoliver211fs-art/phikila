@@ -5,6 +5,7 @@ import {
   markAttendanceSynced,
   getUnsyncedMarks,
   markMarksSynced,
+  saveConflict,
 } from "./db";
 
 let isSyncing = false;
@@ -27,8 +28,14 @@ export async function syncPendingData(): Promise<{ synced: number; failed: numbe
           body: JSON.stringify({ records: unsyncedAttendance }),
         });
         if (res.ok) {
+          const data = await res.json().catch(() => null);
+          // Conflicts mean the server changed after the device edited —
+          // the server value won for now; the user resolves below.
+          for (const c of data?.conflicts ?? []) {
+            await saveConflict({ table: "attendance", key: c.key, client: c.client, server: c.server });
+          }
           await markAttendanceSynced(unsyncedAttendance.map((r) => r.id));
-          synced += unsyncedAttendance.length;
+          synced += data?.synced ?? unsyncedAttendance.length;
         } else {
           failed += unsyncedAttendance.length;
         }
@@ -47,8 +54,12 @@ export async function syncPendingData(): Promise<{ synced: number; failed: numbe
           body: JSON.stringify({ records: unsyncedMarks }),
         });
         if (res.ok) {
+          const data = await res.json().catch(() => null);
+          for (const c of data?.conflicts ?? []) {
+            await saveConflict({ table: "marks", key: c.key, client: c.client, server: c.server });
+          }
           await markMarksSynced(unsyncedMarks.map((r) => r.id));
-          synced += unsyncedMarks.length;
+          synced += data?.synced ?? unsyncedMarks.length;
         } else {
           failed += unsyncedMarks.length;
         }

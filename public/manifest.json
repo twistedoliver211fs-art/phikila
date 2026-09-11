@@ -1,6 +1,6 @@
 {
-  "name": "Phikila — School Management Platform",
-  "short_name": "Phikila",
+  "name": "Decimal — School Management Platform",
+  "short_name": "Decimal",
   "description": "Run your school with clarity. Multi-school management platform.",
   "start_url": "/",
   "scope": "/",
@@ -59,14 +59,14 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Phikila Dashboard"
+      "label": "Decimal Dashboard"
     },
     {
       "src": "/screenshots/mobile.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Phikila Mobile"
+      "label": "Decimal Mobile"
     }
   ],
   "categories": ["education", "business"]

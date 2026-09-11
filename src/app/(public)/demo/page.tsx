@@ -4,13 +4,90 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Mail, Calendar, ExternalLink } from "lucide-react";
+import {
+  CheckCircle,
+  Mail,
+  Calendar,
+  ExternalLink,
+  Copy,
+  Check,
+  GraduationCap,
+  Users,
+  BookOpen,
+  Wallet,
+  ClipboardList,
+  UserPlus,
+} from "lucide-react";
 import { CONTACTS } from "@/lib/contacts";
+
+const DEMO_PORTALS = [
+  {
+    role: "Principal",
+    email: "principal@decimal.app",
+    password: "Demo1234!",
+    icon: GraduationCap,
+    description: "Full school management — students, fees, attendance, exams",
+    portal: "/principal",
+    color: "from-indigo-500 to-purple-500",
+  },
+  {
+    role: "Teacher",
+    email: "teacher@decimal.app",
+    password: "Demo1234!",
+    icon: BookOpen,
+    description: "Attendance, student records, exams, and communication",
+    portal: "/teacher",
+    color: "from-blue-500 to-cyan-500",
+  },
+  {
+    role: "Parent",
+    email: "parent@decimal.app",
+    password: "Demo1234!",
+    icon: Users,
+    description: "Child progress, attendance, fees, and messages",
+    portal: "/parent",
+    color: "from-emerald-500 to-teal-500",
+  },
+  {
+    role: "Finance",
+    email: "finance@decimal.app",
+    password: "Demo1234!",
+    icon: Wallet,
+    description: "Fee structures, payments, invoicing, and reports",
+    portal: "/finance",
+    color: "from-amber-500 to-orange-500",
+  },
+  {
+    role: "Secretary",
+    email: "secretary@decimal.app",
+    password: "Demo1234!",
+    icon: ClipboardList,
+    description: "Announcements, documents, and daily operations",
+    portal: "/secretary",
+    color: "from-pink-500 to-rose-500",
+  },
+  {
+    role: "Admissions",
+    email: "admissions@decimal.app",
+    password: "Demo1234!",
+    icon: UserPlus,
+    description: "Student enrollment, applications, and onboarding",
+    portal: "/admissions-officer",
+    color: "from-violet-500 to-fuchsia-500",
+  },
+];
 
 export default function DemoPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,15 +126,15 @@ export default function DemoPage() {
         style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/50 -z-10" />
-        <div className="w-full max-w-lg text-center">
+        <div className="w-full max-w-2xl text-center">
           <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-foreground">
-              Demo Credentials Sent!
+              Demo Credentials Ready!
             </h1>
             <p className="mt-4 text-white/80">
-              Check your email for login credentials to the Phikila demo school.
-              You can start exploring right away.
+              Use any of the credentials below to explore Decimal. All portals
+              share the same demo school with sample data.
             </p>
 
             <div className="mt-6 space-y-3">
@@ -106,175 +183,207 @@ export default function DemoPage() {
 
   return (
     <section
-      className="relative flex min-h-screen items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
+      className="relative min-h-screen px-4 py-12 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}
     >
-      <div className="absolute inset-0 bg-black/50 -z-10" />
+      <div className="absolute inset-0 bg-black/60 -z-10" />
 
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex flex-col items-center">
+          <Link href="/" className="flex items-center gap-2 mb-6">
             <Image
               src="/logo.jpeg"
-              alt="Phikila"
+              alt="Decimal"
               width={40}
               height={40}
               className="rounded-lg"
             />
             <span className="text-xl font-bold tracking-tight text-white">
-              Phikila
+              Decimal
             </span>
           </Link>
-        </div>
 
-        <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white">Get a Demo</h1>
-            <p className="mt-2 text-sm text-white/70">
-              Explore Phikila with a pre-loaded demo school. No commitment
-              required.
+            <h1 className="text-3xl font-bold text-white">
+              Try Every Portal
+            </h1>
+            <p className="mt-2 text-sm text-white/70 max-w-lg">
+              Explore Decimal from any perspective. Each portal comes with
+              pre-loaded data — students, fees, attendance, and more.
             </p>
           </div>
+        </div>
 
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-center">
-              <p className="text-sm font-medium text-red-300">{error}</p>
-            </div>
-          )}
+        {/* Portal Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {DEMO_PORTALS.map((portal) => {
+            const Icon = portal.icon;
+            return (
+              <div
+                key={portal.role}
+                className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-5 hover:bg-white/15 transition-all group"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div
+                    className={`w-10 h-10 rounded-lg bg-gradient-to-br ${portal.color} flex items-center justify-center flex-shrink-0`}
+                  >
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">{portal.role}</h3>
+                    <p className="text-xs text-white/60">{portal.description}</p>
+                  </div>
+                </div>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                placeholder="John Mwangi"
-              />
-            </div>
+                {/* Credentials */}
+                <div className="space-y-2 mt-4">
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs bg-black/30 rounded px-2 py-1.5 text-white/90 font-mono truncate">
+                      {portal.email}
+                    </code>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(portal.email, `email-${portal.role}`)
+                      }
+                      className="p-1.5 rounded hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                    >
+                      {copiedField === `email-${portal.role}` ? (
+                        <Check className="h-3.5 w-3.5 text-green-400" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs bg-black/30 rounded px-2 py-1.5 text-white/90 font-mono">
+                      {portal.password}
+                    </code>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(
+                          portal.password,
+                          `pass-${portal.role}`
+                        )
+                      }
+                      className="p-1.5 rounded hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                    >
+                      {copiedField === `pass-${portal.role}` ? (
+                        <Check className="h-3.5 w-3.5 text-green-400" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                placeholder="john@school.ac.ke"
-              />
-            </div>
+                {/* Quick Login */}
+                <a
+                  href="/login"
+                  className="mt-3 flex items-center justify-center gap-1.5 w-full rounded-lg bg-white/10 px-4 py-2 text-xs font-medium text-white hover:bg-white/20 transition-colors"
+                >
+                  Login as {portal.role}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            );
+          })}
+        </div>
 
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                required
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                placeholder="+254 712 345 678"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="school"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                School Name
-              </label>
-              <input
-                type="text"
-                id="school"
-                name="school"
-                required
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                placeholder="Phikila Academy"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="role"
-                className="block text-sm font-medium text-white mb-1"
-              >
-                Your Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-              >
-                <option value="" className="bg-gray-800">
-                  Select your role
-                </option>
-                <option value="principal" className="bg-gray-800">
-                  Principal / Head Teacher
-                </option>
-                <option value="deputy" className="bg-gray-800">
-                  Deputy Principal
-                </option>
-                <option value="bursar" className="bg-gray-800">
-                  Bursar / Finance
-                </option>
-                <option value="teacher" className="bg-gray-800">
-                  Teacher
-                </option>
-                <option value="other" className="bg-gray-800">
-                  Other
-                </option>
-              </select>
+        {/* Request Form */}
+        <div className="max-w-md mx-auto">
+          <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-6 shadow-2xl">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-bold text-white">
+                Want a personalized demo?
+              </h2>
+              <p className="mt-1 text-sm text-white/60">
+                Enter your details and we&apos;ll send you a custom demo with
+                your school&apos;s data.
+              </p>
             </div>
 
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-sm font-medium text-white mb-1"
+            {error && (
+              <div className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-center">
+                <p className="text-sm font-medium text-red-300">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="Your name"
+                />
+              </div>
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="Email address"
+                />
+              </div>
+              <div>
+                <input
+                  type="tel"
+                  name="phone"
+                  required
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="Phone number"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  name="school"
+                  required
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="School name"
+                />
+              </div>
+              <div>
+                <select
+                  name="role"
+                  className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+                >
+                  <option value="" className="bg-gray-800">
+                    Your role
+                  </option>
+                  <option value="principal" className="bg-gray-800">
+                    Principal / Head Teacher
+                  </option>
+                  <option value="teacher" className="bg-gray-800">
+                    Teacher
+                  </option>
+                  <option value="bursar" className="bg-gray-800">
+                    Bursar / Finance
+                  </option>
+                  <option value="other" className="bg-gray-800">
+                    Other
+                  </option>
+                </select>
+              </div>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-11 text-sm"
               >
-                Message (Optional)
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={3}
-                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-                placeholder="Tell us about your school..."
-              />
+                {submitting ? "Sending..." : "Get Custom Demo"}
+              </Button>
+            </form>
+
+            <div className="mt-3 flex items-center justify-center gap-4 text-xs text-white/50">
+              <span className="flex items-center gap-1">
+                <Mail className="h-3 w-3" /> Instant email
+              </span>
+              <span>·</span>
+              <span>No credit card</span>
             </div>
-
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full h-12 text-base"
-            >
-              {submitting ? "Submitting..." : "Get Demo Access"}
-            </Button>
-          </form>
-
-          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-white/50">
-            <span className="flex items-center gap-1">
-              <Mail className="h-3 w-3" /> Instant email delivery
-            </span>
-            <span>·</span>
-            <span>No credit card required</span>
           </div>
         </div>
 

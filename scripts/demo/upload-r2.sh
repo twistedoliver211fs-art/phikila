@@ -8,10 +8,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT_DIR="$SCRIPT_DIR/output"
-FINAL_VIDEO="$OUTPUT_DIR/phikila-demo.mp4"
+FINAL_VIDEO="$OUTPUT_DIR/decimal-demo.mp4"
 THUMBNAIL="$OUTPUT_DIR/thumbnail.jpg"
-R2_BUCKET="phikila-demo"
-R2_KEY="demo/phikila-demo-$(date +%Y%m%d).mp4"
+R2_BUCKET="decimal-demo"
+R2_KEY="demo/decimal-demo-$(date +%Y%m%d).mp4"
 R2_THUMB_KEY="demo/thumbnail-$(date +%Y%m%d).jpg"
 R2_PUBLIC_URL="${R2_PUBLIC_URL:-https://pub-4cad27e8f2764072a35726cc9af64723.r2.dev}"
 
@@ -44,7 +44,7 @@ echo "📤 Uploading video..."
 wrangler r2 object put "$R2_BUCKET/$R2_KEY" \
   --file "$FINAL_VIDEO" \
   --content-type "video/mp4" \
-  --metadata '{"cache-control": "public, max-age=31536000, immutable"}'
+  --remote
 
 echo "   ✅ Video uploaded: $R2_KEY"
 
@@ -54,12 +54,14 @@ echo "📤 Uploading thumbnail..."
 wrangler r2 object put "$R2_BUCKET/$R2_THUMB_KEY" \
   --file "$THUMBNAIL" \
   --content-type "image/jpeg" \
-  --metadata '{"cache-control": "public, max-age=31536000, immutable"}'
+  --remote
 
 echo "   ✅ Thumbnail uploaded: $R2_THUMB_KEY"
 
-# Generate public URL
-R2_PUBLIC_URL="https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev"
+# Generate public URL (use account ID to derive r2.dev subdomain)
+if [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+  R2_PUBLIC_URL="https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev"
+fi
 VIDEO_URL="${R2_PUBLIC_URL}/${R2_KEY}"
 THUMB_URL="${R2_PUBLIC_URL}/${R2_THUMB_KEY}"
 

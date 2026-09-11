@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Phikila",
-  description: "Phikila privacy policy",
+  title: "Privacy Policy — Decimal",
+  description: "Decimal privacy policy",
 };
 
 export default function PrivacyPage() {
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             1. Information We Collect
           </h2>
           <p>
-            Phikila collects information necessary to provide school management
+            Decimal collects information necessary to provide school management
             services, including names, email addresses (via Google OAuth),
             school affiliation, and role information. We do not collect
             passwords — authentication is handled entirely by Google.
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           <p>
             We use collected information to operate the platform, manage school
             administration, communicate with users, and improve our services.
-            Data is used solely for the purpose of providing Phikila&apos;s
+            Data is used solely for the purpose of providing Decimal&apos;s
             school management functionality.
           </p>
         </section>
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
           </h2>
           <p>
             Users can request access to, correction of, or deletion of their
-            personal data by contacting the school administrator or Phikila
+            personal data by contacting the school administrator or Decimal
             support.
           </p>
         </section>

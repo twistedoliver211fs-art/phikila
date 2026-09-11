@@ -1,4 +1,4 @@
--- Phikila Multi-School Management System
+-- Decimal Multi-School Management System
 -- Initial database schema
 
 -- Uses PostgreSQL built-in gen_random_uuid() for UUIDs

@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function PATCH(request: Request) {
+  const rl = await rateLimit(request, { maxRequests: 10, windowMs: 60_000, prefix: "admin:update-member" });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const supabase = await createClient();
 
   const {
@@ -13,7 +19,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  // Check if user is super_admin
   const { data: isAdmin } = await supabase.rpc("is_super_admin");
   if (!isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

@@ -1,4 +1,4 @@
--- Phikila Admissions Office Upgrade
+-- Decimal Admissions Office Upgrade
 -- Run after 004_timetable_upgrade.sql
 
 -- ============================================================

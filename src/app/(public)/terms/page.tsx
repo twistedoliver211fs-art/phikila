@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTACTS } from "@/lib/contacts";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Phikila",
-  description: "Phikila terms of service",
+  title: "Terms of Service — Decimal",
+  description: "Decimal terms of service",
 };
 
 export default function TermsPage() {
@@ -21,7 +21,7 @@ export default function TermsPage() {
             1. Acceptance of Terms
           </h2>
           <p>
-            By accessing or using Phikila, you agree to these Terms of Service.
+            By accessing or using Decimal, you agree to these Terms of Service.
             If you do not agree, do not use the platform.
           </p>
         </section>
@@ -30,7 +30,7 @@ export default function TermsPage() {
             2. Description of Service
           </h2>
           <p>
-            Phikila is a multi-school management platform providing
+            Decimal is a multi-school management platform providing
             administration, academics, attendance, finance, admissions,
             communication, and timetable management tools for schools.
           </p>
@@ -50,7 +50,7 @@ export default function TermsPage() {
             4. Data Ownership
           </h2>
           <p>
-            Schools retain ownership of their data. Phikila acts as a data
+            Schools retain ownership of their data. Decimal acts as a data
             processor to provide the service. Schools may request data export
             or deletion at any time.
           </p>
@@ -60,7 +60,7 @@ export default function TermsPage() {
             5. Limitation of Liability
           </h2>
           <p>
-            Phikila is provided &quot;as is&quot; without warranties of any
+            Decimal is provided &quot;as is&quot; without warranties of any
             kind. We are not liable for any indirect, incidental, or
             consequential damages arising from use of the platform.
           </p>

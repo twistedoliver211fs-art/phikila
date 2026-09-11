@@ -167,7 +167,7 @@ export function VerifyDownload() {
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-success" />
             <p className="text-sm font-semibold text-success">
-              Verified — genuine Phikila release
+              Verified — genuine Decimal release
             </p>
           </div>
           <p className="mt-1.5 text-sm text-muted-foreground">

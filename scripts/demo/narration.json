@@ -3,8 +3,8 @@
     {
       "id": "landing-hero",
       "duration": 5,
-      "narration": "Welcome to Phikila, the modern school management system built for Kenyan schools.",
-      "caption": "Welcome to Phikila",
+      "narration": "Welcome to Decimal, the modern school management system built for Kenyan schools.",
+      "caption": "Welcome to Decimal",
       "url": "/"
     },
     {
@@ -68,7 +68,7 @@
     {
       "id": "outro",
       "duration": 5,
-      "narration": "Phikila. One school OS, every device. Start your free trial today.",
+      "narration": "Decimal. One school OS, every device. Start your free trial today.",
       "caption": "Start Your Free Trial",
       "url": "/"
     }

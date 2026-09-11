@@ -17,7 +17,7 @@ jobs:
         id: check
         run: |
           echo "Checking latest release..."
-          UPSTREAM_TAG=$(curl -s https://api.github.com/repos/twistedoliver211fs-art/phikila/releases/latest | jq -r '.tag_name')
+          UPSTREAM_TAG=$(curl -s https://api.github.com/repos/twistedoliver211fs-art/decimal/releases/latest | jq -r '.tag_name')
           echo "Upstream latest: $UPSTREAM_TAG"
           echo "upstream_tag=$UPSTREAM_TAG" >> $GITHUB_OUTPUT
           

@@ -5,6 +5,7 @@ import {
   getAllowedRoles,
   isProtectedPath,
   isAuthPath,
+  resolvePortalRole,
 } from "@/lib/auth-config";
 
 export async function updateSession(request: NextRequest) {
@@ -52,12 +53,29 @@ export async function updateSession(request: NextRequest) {
   if (user && isProtected) {
     const { data: members } = await supabase
       .from("school_members")
-      .select("role")
+      .select("role, school_id")
       .eq("user_id", user.id)
-      .eq("is_active", true)
-      .limit(1);
+      .eq("is_active", true);
 
-    const userRole = members?.[0]?.role;
+    let userRole = members?.[0]?.role;
+
+    // Multi-school users are gated by the role in their active school (and,
+    // when set, the role they chose at the school picker) so the portal they
+    // land in matches the school they selected.
+    if ((members?.length ?? 0) > 1) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_school_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      userRole =
+        resolvePortalRole(
+          members ?? [],
+          profile?.active_school_id,
+          request.cookies.get("decimal_active_role")?.value ?? null
+        ) ?? userRole;
+    }
 
     if (!userRole) {
       const url = request.nextUrl.clone();

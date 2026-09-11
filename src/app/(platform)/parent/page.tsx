@@ -1,183 +1,288 @@
-import { Baby, DollarSign, BookOpen, Calendar, Mail, AlertCircle, ClipboardCheck } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentSchoolId } from "@/lib/supabase/helpers";
+"use client";
 
-export default async function ParentPage() {
-  const schoolId = await getCurrentSchoolId();
-  const supabase = await createClient();
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Baby, ClipboardCheck, DollarSign, BookOpen, Calendar, Megaphone, Mail } from "lucide-react";
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+interface Child {
+  id: string;
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  admissionNumber: string;
+  className: string;
+  gradeName: string;
+  relationshipType: string;
+}
 
-  const { data: children } = await supabase
-    .from("students")
-    .select("id, first_name, last_name, class_id, classes(name, grades(name))")
-    .eq("school_id", schoolId)
-    .eq("parent_user_id", user?.id)
-    .eq("is_active", true);
+interface AttendanceRecord {
+  date: string;
+  status: string;
+  className: string;
+}
 
-  const childIds = children?.map((c) => c.id) ?? [];
+interface FeeRecord {
+  invoiceId: string;
+  invoiceNumber: string;
+  amountDue: number;
+  amountPaid: number;
+  balance: number;
+  status: string;
+  dueDate: string | null;
+  feeName: string;
+}
 
-  const { data: attendance } = await supabase
-    .from("attendance_records")
-    .select("student_id, status, date")
-    .in("student_id", childIds)
-    .gte("date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
+const statusColors: Record<string, string> = {
+  present: "bg-green-100 text-green-800",
+  absent: "bg-red-100 text-red-800",
+  late: "bg-yellow-100 text-yellow-800",
+  excused: "bg-blue-100 text-blue-800",
+  pending: "bg-yellow-100 text-yellow-800",
+  partial: "bg-blue-100 text-blue-800",
+  paid: "bg-green-100 text-green-800",
+  overdue: "bg-red-100 text-red-800",
+};
 
-  const { data: accounts } = await supabase
-    .from("student_accounts")
-    .select("student_id, amount_due, amount_paid, balance")
-    .in("student_id", childIds);
+export default function ParentDashboardPage() {
+  const [children, setChildren] = useState<Child[]>([]);
+  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [fees, setFees] = useState<FeeRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
-  const { data: announcements } = await supabase
-    .from("announcements")
-    .select("id, title, content, created_at")
-    .eq("school_id", schoolId)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })
-    .limit(5);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [childrenRes, messagesRes] = await Promise.all([
+          fetch("/api/parent/children"),
+          fetch("/api/parent/messages"),
+        ]);
+        if (childrenRes.ok) {
+          const data = await childrenRes.json();
+          setChildren(data.children ?? []);
+          if (data.children?.length > 0) {
+            setSelectedChild(data.children[0]);
+          }
+        }
+        if (messagesRes.ok) {
+          const data = await messagesRes.json();
+          setUnreadMessages(data.unreadCount ?? 0);
+        }
+      } catch {
+        console.error("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
-  const getAttendanceRate = (studentId: string) => {
-    const records = attendance?.filter((a) => a.student_id === studentId) ?? [];
-    if (records.length === 0) return "—";
-    const present = records.filter((a) => a.status === "present").length;
-    return `${((present / records.length) * 100).toFixed(0)}%`;
-  };
+  useEffect(() => {
+    if (!selectedChild) return;
+    async function fetchChildData() {
+      try {
+        const [attRes, feeRes] = await Promise.all([
+          fetch(`/api/parent/attendance?studentId=${selectedChild!.studentId}`),
+          fetch(`/api/parent/fees?studentId=${selectedChild!.studentId}`),
+        ]);
+        if (attRes.ok) {
+          const attData = await attRes.json();
+          setAttendance(attData.attendance ?? []);
+        }
+        if (feeRes.ok) {
+          const feeData = await feeRes.json();
+          setFees(feeData.fees ?? []);
+        }
+      } catch {
+        console.error("Failed to fetch child data");
+      }
+    }
+    fetchChildData();
+  }, [selectedChild]);
 
-  const getBalance = (studentId: string) => {
-    const account = accounts?.find((a) => a.student_id === studentId);
-    return account ? Number(account.balance) : 0;
-  };
-
-  const quickAccess = [
-    { label: "Attendance", href: "#attendance", icon: ClipboardCheck },
-    { label: "Fees", href: "#fees", icon: DollarSign },
-    { label: "Academics", href: "#academics", icon: BookOpen },
-    { label: "Timetable", href: "#timetable", icon: Calendar },
-    { label: "Messages", href: "#messages", icon: Mail },
-  ];
+  const totalOwed = fees.reduce((sum, f) => sum + f.balance, 0);
+  const presentDays = attendance.filter((a) => a.status === "present").length;
+  const attendanceRate = attendance.length > 0 ? (presentDays / attendance.length) * 100 : 0;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Hello, Parent</h1>
-        <p className="text-muted-foreground mt-1">
-          Here&apos;s an overview of your {children?.length ?? 0} {children?.length === 1 ? "child" : "children"}.
-        </p>
+        <h1 className="text-2xl font-bold">Parent Portal</h1>
+        <p className="text-muted-foreground">View your children&apos;s attendance, fees, and progress</p>
       </div>
 
-      {/* Children */}
-      <section id="children">
-        <div className="flex items-center gap-2 mb-4">
-          <Baby className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-semibold text-foreground">My Children</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {children && children.length > 0 ? (
-            children.map((child) => (
-              <div key={child.id} className="rounded-xl border border-border bg-card p-5 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                    <span className="text-sm font-bold text-primary">
-                      {child.first_name[0]}{child.last_name[0]}
-                    </span>
+      {loading ? (
+        <p className="text-muted-foreground">Loading...</p>
+      ) : children.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <Baby className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No children linked to your account</p>
+            <p className="text-sm mt-2">Contact your school administrator to link your children</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link href="/parent/timetable">
+              <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
+                    <Calendar className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {child.first_name} {child.last_name}
-                    </p>
+                    <p className="text-sm font-medium">Timetable</p>
+                    <p className="text-xs text-muted-foreground">View class schedule</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/parent/announcements">
+              <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
+                    <Megaphone className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Announcements</p>
+                    <p className="text-xs text-muted-foreground">School news & updates</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/parent/messages">
+              <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
+                    <Mail className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Messages</p>
                     <p className="text-xs text-muted-foreground">
-                      {(child.classes as any)?.grades?.name ?? ""} {(child.classes as any)?.name ?? ""}
+                      {unreadMessages > 0 ? (
+                        <span className="text-green-600 font-medium">{unreadMessages} unread</span>
+                      ) : (
+                        "Inbox"
+                      )}
                     </p>
                   </div>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Attendance</p>
-                    <p className="text-sm font-semibold text-foreground">{getAttendanceRate(child.id)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Balance</p>
-                    <p className={`text-sm font-semibold ${getBalance(child.id) > 0 ? "text-amber-600" : "text-green-600"}`}>
-                      KES {getBalance(child.id).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center">
-              <Baby className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No children linked to your account yet.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Fees */}
-      <section id="fees" className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-base font-semibold text-foreground mb-4">Fee Balances</h2>
-        {accounts && accounts.length > 0 ? (
-          <div className="space-y-3">
-            {accounts.map((acc) => {
-              const child = children?.find((c) => c.id === acc.student_id);
-              return (
-                <div key={acc.student_id} className="flex items-center justify-between rounded-lg border border-border/50 p-3">
-                  <span className="text-sm font-medium text-foreground">
-                    {child ? `${child.first_name} ${child.last_name}` : "—"}
-                  </span>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-green-600">Paid: KES {Number(acc.amount_paid).toLocaleString()}</p>
-                    {Number(acc.balance) > 0 && (
-                      <p className="text-xs text-amber-600">Balance: KES {Number(acc.balance).toLocaleString()}</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                </CardContent>
+              </Card>
+            </Link>
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">No fee records found.</p>
-        )}
-      </section>
 
-      {/* Announcements */}
-      <section id="messages" className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-base font-semibold text-foreground mb-4">School Announcements</h2>
-        {announcements && announcements.length > 0 ? (
-          <div className="space-y-3">
-            {announcements.map((a) => (
-              <div key={a.id} className="rounded-lg border border-border/50 p-3">
-                <p className="text-sm font-medium text-foreground">{a.title}</p>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.content}</p>
-                <p className="text-xs text-muted-foreground/60 mt-2">
-                  {new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                </p>
-              </div>
+          <div className="flex gap-2 flex-wrap">
+            {children.map((child) => (
+              <button
+                key={child.studentId}
+                onClick={() => setSelectedChild(child)}
+                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  selectedChild?.studentId === child.studentId
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-muted/80"
+                }`}
+              >
+                {child.firstName} {child.lastName}
+              </button>
             ))}
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">No announcements yet.</p>
-        )}
-      </section>
 
-      {/* Quick Access */}
-      <section>
-        <h2 className="text-base font-semibold text-foreground mb-4">Quick Access</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {quickAccess.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 hover:bg-muted/50 hover:shadow-md transition-all"
-            >
-              <item.icon className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium text-foreground">{item.label}</span>
-            </a>
-          ))}
-        </div>
-      </section>
+          {selectedChild && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
+                    <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{attendanceRate.toFixed(1)}%</div>
+                    <p className="text-xs text-muted-foreground">
+                      {presentDays}/{attendance.length} days present
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Outstanding Fees</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">KES {totalOwed.toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground">{fees.length} invoices</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Class</CardTitle>
+                    <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{selectedChild.className}</div>
+                    <p className="text-xs text-muted-foreground">{selectedChild.gradeName}</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Attendance</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {attendance.length === 0 ? (
+                      <p className="text-muted-foreground">No attendance records</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {attendance.slice(0, 10).map((record, i) => (
+                          <div key={i} className="flex items-center justify-between p-2 rounded-lg border">
+                            <span className="text-sm">{new Date(record.date).toLocaleDateString()}</span>
+                            <Badge className={statusColors[record.status] ?? "bg-gray-100 text-gray-800"}>
+                              {record.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Fee Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {fees.length === 0 ? (
+                      <p className="text-muted-foreground">No fee records</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {fees.slice(0, 10).map((fee) => (
+                          <div key={fee.invoiceId} className="flex items-center justify-between p-2 rounded-lg border">
+                            <div>
+                              <p className="text-sm font-medium">{fee.feeName}</p>
+                              <p className="text-xs text-muted-foreground">{fee.invoiceNumber}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">KES {fee.balance.toLocaleString()}</p>
+                              <Badge className={statusColors[fee.status] ?? "bg-gray-100 text-gray-800"}>
+                                {fee.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

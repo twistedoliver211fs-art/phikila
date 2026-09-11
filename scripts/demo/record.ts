@@ -1,6 +1,6 @@
 /**
  * Playwright Demo Recording Script
- * Records the Phikila app for demo video generation.
+ * Records the Decimal app for demo video generation.
  *
  * Authenticates via Supabase API (not UI) since login is Google OAuth only.
  * Usage: npx tsx scripts/demo/record.ts
@@ -14,7 +14,7 @@ import * as path from "path";
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const DEMO_EMAIL = "demo@phikila.app";
+const DEMO_EMAIL = "demo@decimal.app";
 const DEMO_PASSWORD = "Demo1234!";
 
 const OUTPUT_DIR = path.join(__dirname, "output");
@@ -98,7 +98,7 @@ async function injectSession(
 }
 
 async function run() {
-  console.log("🎬 Starting Phikila demo recording...");
+  console.log("🎬 Starting Decimal demo recording...");
   console.log(`   Base URL: ${BASE_URL}`);
   console.log(`   Resolution: ${WIDTH}x${HEIGHT}`);
 

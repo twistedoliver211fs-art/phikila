@@ -2,7 +2,7 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">pgiytpbrnyxnnfupvaiv.supabase.co</domain>
-        <domain includeSubdomains="true">phikila-app.vercel.app</domain>
+        <domain includeSubdomains="true">decimal-app.vercel.app</domain>
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>

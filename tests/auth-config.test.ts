@@ -6,6 +6,7 @@ import {
   portalRoutes,
   routeRoleMap,
   protectedPaths,
+  resolvePortalRole,
 } from "@/lib/auth-config";
 
 describe("getAllowedRoles", () => {
@@ -86,6 +87,11 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/teacher/attendance")).toBe(true);
   });
 
+  it("returns true for /school-picker", () => {
+    expect(isProtectedPath("/school-picker")).toBe(true);
+    expect(isProtectedPath("/school-picker/sub")).toBe(true);
+  });
+
   it("returns false for public paths", () => {
     expect(isProtectedPath("/")).toBe(false);
     expect(isProtectedPath("/login")).toBe(false);
@@ -133,6 +139,47 @@ describe("portalRoutes", () => {
     for (const route of Object.values(portalRoutes)) {
       expect(route.startsWith("/")).toBe(true);
     }
+  });
+});
+
+describe("resolvePortalRole", () => {
+  const members = [
+    { role: "teacher", school_id: "school-a" },
+    { role: "parent", school_id: "school-b" },
+  ];
+
+  it("returns the role for the active school", () => {
+    expect(resolvePortalRole(members, "school-b")).toBe("parent");
+  });
+
+  it("returns undefined when no active school is set", () => {
+    expect(resolvePortalRole(members, null)).toBeUndefined();
+    expect(resolvePortalRole(members, undefined)).toBeUndefined();
+  });
+
+  it("returns undefined when the active school is not an active membership", () => {
+    expect(resolvePortalRole(members, "school-c")).toBeUndefined();
+  });
+
+  it("returns undefined for empty memberships", () => {
+    expect(resolvePortalRole([], "school-a")).toBeUndefined();
+  });
+
+  it("prefers the chosen role when the user holds it in the active school", () => {
+    expect(resolvePortalRole(members, "school-b", "parent")).toBe("parent");
+  });
+
+  it("ignores a preferred role the user does not hold in the active school", () => {
+    expect(resolvePortalRole(members, "school-b", "teacher")).toBe("parent");
+  });
+
+  it("resolves among multiple roles held in one school", () => {
+    const multiRole = [
+      { role: "teacher", school_id: "school-a" },
+      { role: "parent", school_id: "school-a" },
+    ];
+    expect(resolvePortalRole(multiRole, "school-a")).toBe("teacher");
+    expect(resolvePortalRole(multiRole, "school-a", "parent")).toBe("parent");
   });
 });
 

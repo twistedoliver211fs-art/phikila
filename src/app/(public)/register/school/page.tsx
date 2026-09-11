@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle, LogIn, School } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, School } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface FormData {
@@ -25,6 +25,10 @@ export default function RegisterSchoolPage() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [form, setForm] = useState<FormData>({
     name: "",
     schoolType: "private",
@@ -63,18 +67,17 @@ export default function RegisterSchoolPage() {
 
       if (!res.ok) {
         if (res.status === 401) {
-          // Session expired while filling in the form — ask for sign-in again.
           setAuthState("signed-out");
           return;
         }
         setError(data.error || "Failed to register school");
+        setSubmitting(false);
         return;
       }
 
-      router.push("/principal");
+      window.location.href = "/principal";
     } catch {
       setError("Network error. Please try again.");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -90,6 +93,39 @@ export default function RegisterSchoolPage() {
     );
   }
 
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+
+    const supabase = createClient();
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (!signInError) {
+      setAuthState("signed-in");
+      setAuthLoading(false);
+      return;
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (!signUpError) {
+      setAuthState("signed-in");
+      setAuthLoading(false);
+      return;
+    }
+
+    setAuthError(signInError.message || "Failed to sign in. Please try again.");
+    setAuthLoading(false);
+  };
+
   if (authState === "signed-out") {
     return (
       <section className={pageShell} style={{ backgroundImage: "url('/login-get-started-bg.jpg')" }}>
@@ -98,8 +134,8 @@ export default function RegisterSchoolPage() {
         <div className="w-full max-w-md">
           <div className="mb-8 flex justify-center">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.jpeg" alt="Phikila" width={40} height={40} className="rounded-lg" />
-              <span className="text-xl font-bold tracking-tight text-white">Phikila</span>
+              <Image src="/logo.jpeg" alt="Decimal" width={40} height={40} className="rounded-lg" />
+              <span className="text-xl font-bold tracking-tight text-white">Decimal</span>
             </Link>
           </div>
 
@@ -109,20 +145,47 @@ export default function RegisterSchoolPage() {
             </div>
             <h1 className="text-2xl font-bold text-white">Register Your School</h1>
             <p className="mt-2 text-sm text-white/70">
-              First, sign in with Google so your school can be linked to your
-              account. You&apos;ll fill in the school details right after.
+              First, sign in with your email and password so your school can be
+              linked to your account. You&apos;ll fill in the school details right
+              after.
             </p>
 
-            <Link href={`/login?next=${encodeURIComponent("/register/school")}`}>
-              <Button className="mt-6 w-full h-12 text-base gap-2">
-                <LogIn className="h-5 w-5" />
-                Continue with Google
+            <form onSubmit={handleAuth} className="mt-6 space-y-3">
+              {authError && (
+                <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-3">
+                  <p className="text-sm font-medium text-red-300">{authError}</p>
+                </div>
+              )}
+
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+              />
+
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+                className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+              />
+
+              <Button
+                type="submit"
+                disabled={authLoading}
+                className="w-full h-12 text-base"
+              >
+                {authLoading ? "Signing in..." : "Sign In or Create Account"}
               </Button>
-            </Link>
+            </form>
 
             <p className="mt-4 text-xs text-white/50">
-              Don&apos;t have an account yet? Signing in with Google will
-              create one automatically.
+              Don&apos;t have an account? One will be created automatically.
             </p>
           </div>
 
@@ -144,8 +207,8 @@ export default function RegisterSchoolPage() {
       <div className="w-full max-w-lg">
         <div className="mb-8 flex justify-center">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.jpeg" alt="Phikila" width={40} height={40} className="rounded-lg" />
-            <span className="text-xl font-bold tracking-tight text-white">Phikila</span>
+            <Image src="/logo.jpeg" alt="Decimal" width={40} height={40} className="rounded-lg" />
+            <span className="text-xl font-bold tracking-tight text-white">Decimal</span>
           </Link>
         </div>
 

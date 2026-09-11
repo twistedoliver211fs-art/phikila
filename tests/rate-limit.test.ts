@@ -1,56 +1,152 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-describe("checkRateLimit", () => {
+const { mockIncr, mockExpire, mockTtl } = vi.hoisted(() => ({
+  mockIncr: vi.fn(),
+  mockExpire: vi.fn(),
+  mockTtl: vi.fn(),
+}));
+
+vi.mock("@/lib/redis", () => ({
+  default: {
+    incr: mockIncr,
+    expire: mockExpire,
+    ttl: mockTtl,
+  },
+}));
+
+import { rateLimit } from "@/lib/rate-limit";
+
+function makeRequest(headers?: Record<string, string>) {
+  return new Request("http://localhost/api/test", {
+    headers: { ...headers },
+  });
+}
+
+describe("rateLimit (async Redis-based)", () => {
   beforeEach(() => {
-    // Clear the store by running through all possible keys
-    // The rate limiter uses a module-level Map, so we test with unique keys
+    vi.clearAllMocks();
+    mockIncr.mockResolvedValue(1);
+    mockExpire.mockResolvedValue(true);
+    mockTtl.mockResolvedValue(59);
   });
 
-  it("allows requests under the limit", () => {
-    const key = `test-allow-${Date.now()}`;
-    const result = checkRateLimit(key, 3, 60_000);
+  it("allows requests under the limit", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    const result = await rateLimit(makeRequest(), { maxRequests: 3, windowMs: 60_000 });
+
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(2);
+    expect(mockIncr).toHaveBeenCalled();
+    expect(mockExpire).toHaveBeenCalledWith(expect.any(String), 60);
   });
 
-  it("tracks remaining count correctly", () => {
-    const key = `test-remaining-${Date.now()}`;
-    checkRateLimit(key, 3, 60_000);
-    const second = checkRateLimit(key, 3, 60_000);
-    expect(second.allowed).toBe(true);
-    expect(second.remaining).toBe(1);
+  it("sets expiry on the first request", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest(), { maxRequests: 5, windowMs: 30_000 });
+
+    expect(mockExpire).toHaveBeenCalledWith(expect.any(String), 30);
   });
 
-  it("blocks requests over the limit", () => {
-    const key = `test-block-${Date.now()}`;
-    checkRateLimit(key, 2, 60_000);
-    checkRateLimit(key, 2, 60_000);
-    const third = checkRateLimit(key, 2, 60_000);
-    expect(third.allowed).toBe(false);
-    expect(third.remaining).toBe(0);
+  it("does not reset expiry on subsequent requests", async () => {
+    mockIncr.mockResolvedValue(3);
+
+    await rateLimit(makeRequest(), { maxRequests: 5, windowMs: 60_000 });
+
+    expect(mockExpire).not.toHaveBeenCalled();
   });
 
-  it("resets after the window expires", async () => {
-    const key = `test-reset-${Date.now()}`;
-    checkRateLimit(key, 1, 1); // 1ms window
-    // Wait for window to expire
-    await new Promise((resolve) => setTimeout(resolve, 5));
-    const after = checkRateLimit(key, 1, 60_000);
-    expect(after.allowed).toBe(true);
+  it("blocks requests over the limit", async () => {
+    mockIncr.mockResolvedValue(4);
+    mockTtl.mockResolvedValue(30);
+
+    const result = await rateLimit(makeRequest(), { maxRequests: 3, windowMs: 60_000 });
+
+    expect(result.allowed).toBe(false);
+    expect(result.remaining).toBe(0);
   });
 
-  it("returns correct resetAt timestamp", () => {
-    const key = `test-resetAt-${Date.now()}`;
+  it("returns correct resetAt from TTL", async () => {
+    mockIncr.mockResolvedValue(1);
+    mockTtl.mockResolvedValue(45);
     const before = Date.now();
-    const result = checkRateLimit(key, 5, 10_000);
-    expect(result.resetAt).toBeGreaterThanOrEqual(before + 10_000);
+
+    const result = await rateLimit(makeRequest(), { maxRequests: 10, windowMs: 60_000 });
+
+    expect(result.resetAt).toBeGreaterThanOrEqual(before + 45_000);
+    expect(result.resetAt).toBeLessThanOrEqual(before + 46_000);
   });
 
-  it("different keys are independent", () => {
-    const base = `test-independent-${Date.now()}`;
-    checkRateLimit(`${base}-a`, 1, 60_000);
-    const b = checkRateLimit(`${base}-b`, 1, 60_000);
-    expect(b.allowed).toBe(true);
+  it("uses prefix in the Redis key", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest(), { maxRequests: 10, windowMs: 60_000, prefix: "my-prefix" });
+
+    const key = mockIncr.mock.calls[0][0];
+    expect(key).toContain("my-prefix");
+  });
+
+  it("defaults prefix to global", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest(), { maxRequests: 10, windowMs: 60_000 });
+
+    const key = mockIncr.mock.calls[0][0];
+    expect(key).toMatch(/^rl:/);
+  });
+
+  it("extracts IP from x-forwarded-for header", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest({ "x-forwarded-for": "1.2.3.4, 5.6.7.8" }), {
+      maxRequests: 10,
+      windowMs: 60_000,
+    });
+
+    const key = mockIncr.mock.calls[0][0];
+    expect(key).toContain("1.2.3.4");
+  });
+
+  it("falls back to x-real-ip header", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest({ "x-real-ip": "9.8.7.6" }), {
+      maxRequests: 10,
+      windowMs: 60_000,
+    });
+
+    const key = mockIncr.mock.calls[0][0];
+    expect(key).toContain("9.8.7.6");
+  });
+
+  it("uses unknown when no IP headers present", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest(), { maxRequests: 10, windowMs: 60_000 });
+
+    const key = mockIncr.mock.calls[0][0];
+    expect(key).toContain("unknown");
+  });
+
+  it("fails open when Redis throws", async () => {
+    mockIncr.mockRejectedValue(new Error("Redis connection refused"));
+
+    const result = await rateLimit(makeRequest(), { maxRequests: 5, windowMs: 60_000 });
+
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(4);
+  });
+
+  it("different prefixes produce different keys", async () => {
+    mockIncr.mockResolvedValue(1);
+
+    await rateLimit(makeRequest(), { maxRequests: 10, windowMs: 60_000, prefix: "a" });
+    const keyA = mockIncr.mock.calls[0][0];
+
+    await rateLimit(makeRequest(), { maxRequests: 10, windowMs: 60_000, prefix: "b" });
+    const keyB = mockIncr.mock.calls[1][0];
+
+    expect(keyA).not.toBe(keyB);
   });
 });

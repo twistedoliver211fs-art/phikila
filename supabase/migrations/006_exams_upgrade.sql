@@ -1,4 +1,4 @@
--- Phikila Exams System Upgrade
+-- Decimal Exams System Upgrade
 -- Run after 005_admissions_upgrade.sql
 
 -- ============================================================

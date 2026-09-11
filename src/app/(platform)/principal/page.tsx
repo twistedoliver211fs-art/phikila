@@ -41,15 +41,17 @@ export default async function PrincipalPage() {
     .eq("school_id", schoolId)
     .eq("is_active", true);
 
-  const { count: absentStaff } = await supabase
-    .from("attendance_records")
-    .select("id", { count: "exact", head: true })
+  const { data: staffTodayAttendance } = await supabase
+    .from("staff_attendance")
+    .select("status")
     .eq("school_id", schoolId)
-    .eq("date", todayDate)
-    .eq("status", "absent");
+    .eq("date", todayDate);
 
+  const staffPresentToday = staffTodayAttendance?.filter((a) => a.status === "present" || a.status === "late").length ?? 0;
+  const staffAbsentTodayCount = staffTodayAttendance?.filter((a) => a.status === "absent").length ?? 0;
+  const staffLateTodayCount = staffTodayAttendance?.filter((a) => a.status === "late").length ?? 0;
   const staffAttendanceRate = (totalStaff ?? 0) > 0
-    ? (((totalStaff! - (absentStaff ?? 0)) / totalStaff!) * 100).toFixed(0)
+    ? ((staffPresentToday / (totalStaff ?? 1)) * 100).toFixed(0)
     : "0";
 
   const { data: feeAccounts } = await supabase
@@ -84,13 +86,6 @@ export default async function PrincipalPage() {
   });
   const attendanceConcerns = Object.values(absenceCounts).filter((c) => c >= 3).length;
 
-  const { count: staffAbsentToday } = await supabase
-    .from("attendance_records")
-    .select("id", { count: "exact", head: true })
-    .eq("school_id", schoolId)
-    .eq("date", todayDate)
-    .eq("status", "absent");
-
   const attentionItems = [];
   if (attendanceConcerns > 0) {
     attentionItems.push({
@@ -102,14 +97,14 @@ export default async function PrincipalPage() {
       href: "/principal/attendance",
     });
   }
-  if ((staffAbsentToday ?? 0) > 0) {
+  if (staffAbsentTodayCount > 0) {
     attentionItems.push({
       icon: AlertTriangle,
-      title: `${staffAbsentToday} staff member(s) absent`,
+      title: `${staffAbsentTodayCount} staff member(s) absent`,
       description: "Coverage needed for today",
       color: "text-red-600 bg-red-50 border-red-200",
-      action: "Review Staff",
-      href: "/principal/staff",
+      action: "Staff Attendance",
+      href: "/principal/staff-attendance",
     });
   }
   if (overdueAccounts > 0) {
@@ -136,6 +131,13 @@ export default async function PrincipalPage() {
   const hour = today.getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  // Onboarding: check whether the academic structure exists yet.
+  const [hasYear, hasGrades] = await Promise.all([
+    supabase.from("academic_years").select("id").eq("school_id", schoolId).limit(1),
+    supabase.from("grades").select("id").eq("school_id", schoolId).limit(1),
+  ]);
+  const needsSetup = (hasYear.data?.length ?? 0) === 0 || (hasGrades.data?.length ?? 0) === 0;
+
   return (
     <div className="space-y-6">
       <div>
@@ -144,6 +146,22 @@ export default async function PrincipalPage() {
           Here&apos;s what needs attention at your school.
         </p>
       </div>
+
+      {needsSetup && (
+        <Link
+          href="/onboarding"
+          className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-5 transition-colors hover:bg-primary/10"
+        >
+          <AlertTriangle className="h-5 w-5 text-primary shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">Finish setting up your school</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Add your academic year, grades, classes, subjects and bell periods before staff and students start.
+            </p>
+          </div>
+          <span className="text-sm font-semibold text-primary">Set up →</span>
+        </Link>
+      )}
 
       {attentionItems.length > 0 ? (
         <div className="rounded-xl border border-border bg-card p-6">
@@ -202,6 +220,9 @@ export default async function PrincipalPage() {
             <p className="mt-2 text-2xl font-bold text-green-600">
               {staffAttendanceRate}%
             </p>
+            <Link href="/principal/staff-attendance" className="mt-1 text-xs text-primary hover:underline">
+              {staffAbsentTodayCount} absent, {staffLateTodayCount} late
+            </Link>
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

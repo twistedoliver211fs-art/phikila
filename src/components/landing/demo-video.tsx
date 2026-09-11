@@ -52,7 +52,7 @@ export function DemoVideo() {
             variants={staggerItem}
             className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground"
           >
-            Watch the Phikila demo
+            Watch the Decimal demo
           </motion.h2>
           <motion.p
             variants={staggerItem}
@@ -76,7 +76,7 @@ export function DemoVideo() {
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
               <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
               <span className="ml-2 text-xs text-muted-foreground">
-                Phikila Demo — {new Date(config.updatedAt).toLocaleDateString()}
+                Decimal Demo — {new Date(config.updatedAt).toLocaleDateString()}
               </span>
             </div>
 
@@ -98,7 +98,7 @@ export function DemoVideo() {
                   {/* Thumbnail */}
                   <img
                     src={config.thumbnailUrl}
-                    alt="Phikila Demo Video"
+                    alt="Decimal Demo Video"
                     className="w-full h-full object-cover"
                   />
                   {/* Overlay */}

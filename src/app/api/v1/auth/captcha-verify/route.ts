@@ -4,7 +4,7 @@ import { rateLimit } from "@/lib/rate-limit";
 const API_VERSION = "1.0";
 
 export async function POST(request: Request) {
-  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000, prefix: "v1-captcha-verify" });
+  const rl = await rateLimit(request, { maxRequests: 20, windowMs: 60_000, prefix: "v1-captcha-verify" });
   if (!rl.allowed) {
     return NextResponse.json(
       { ok: false, error: "Too many requests. Please try again later." },
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => null);
   const token = body?.token;
-  const siteUrl = body?.siteUrl ?? "https://phikila-app.vercel.app";
+  const siteUrl = body?.siteUrl ?? "https://decimal-app.vercel.app";
 
   if (!token || typeof token !== "string") {
     return NextResponse.json(

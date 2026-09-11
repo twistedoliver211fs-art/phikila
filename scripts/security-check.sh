@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ── Security checklist ──────────────────────────────────────────────────────
-# Run from the phikila-app directory (or set PROJECT_DIR below).
+# Run from the decimal-app directory (or set PROJECT_DIR below).
 #
 # 1. Secret scanner — scans git history for hardcoded credentials.
 #    Uses native git grep (no external tooling required).
@@ -41,7 +41,7 @@ die() {
 }
 
 echo "=========================================="
-echo " Phikila security checks"
+echo " Decimal security checks"
 echo "=========================================="
 echo ""
 
@@ -56,8 +56,8 @@ BAD_PATTERNS=(
   "pk_[0-9a-zA-Z]{32,}"                    # Stripe publishable (harmless, but flag)
   "sk_live_[0-9a-zA-Z]{24}"               # Stripe live secret
   "-----BEGIN (RSA |EC )?PRIVATE KEY-----" # Private keys
-  "supabase_(an)`?on_(key|url)"            # In case anon key leaked as raw value
-  "service_role"                            # Direct mention of the role escalation key
+  "eyJhbGciOiJ"                            # Supabase anon/service-role JWTs — flags actual key values
+  "service_role\\s*=\\s*[\"']?eyJ"     # service-role key assignment with a real JWT value
 )
 
 HITS=0
@@ -65,7 +65,7 @@ for PAT in "${BAD_PATTERNS[@]}"; do
   # git log --all --raw gives us all blobs; git grep --cached would only
   # scan HEAD. We want history too, so we use git grep on every committed
   # blob referenced by rev-list.
-  while IFS= read -r -d '' blob; do
+  while IFS= read -r blob; do
     out=$(git cat-file -p "$blob" 2>/dev/null | grep -E "$PAT" || true)
     if [ -n "$out" ]; then
       HITS=$((HITS + 1))
@@ -73,7 +73,7 @@ for PAT in "${BAD_PATTERNS[@]}"; do
       commit=$(git log --all --diff-filter=A --format="%H" -- "$blob" 2>/dev/null | head -1 || true)
       die "Possible secret in blob $blob${commit:+ (introduced by $commit)}: $out"
     fi
-  done < <(git rev-list --all --objects 2>/dev/null | awk '/^[0-9a-f]{40} [^.]+\\.(ts|tsx|js|jsx|json|env|config|yaml|toml|sql|md|txt|css|html)$/ {print $1 "\x00"}' | tr -d '\n' | xargs -0 printf '%s')
+  done < <(git rev-list --all --objects 2>/dev/null | awk '/^[0-9a-f]{40} [^.]+\\.(ts|tsx|js|jsx|json|env|config|yaml|toml|sql|md|txt|css|html)$/ {print $1}' | sort -u)
 
 done
 
@@ -142,8 +142,10 @@ FIRST_MIG="$MIG_DIR/001_initial_schema.sql"
 if [ ! -f "$FIRST_MIG" ]; then
   die "001_initial_schema.sql not found — cannot verify RLS coverage."
 else
-  TABLES=$(grep -oE 'create table [a-z_]+' "$FIRST_MIG" | awk '{print $3}' | sort -u)
-  RLS_TABLES=$(grep -oE 'alter table [a-z_]+ enable row level security' "$FIRST_MIG" "$MIG_DIR"/*.sql 2>/dev/null | awk '{print $3}' | sort -u)
+  # Case-insensitive and across ALL migrations: later migrations use uppercase
+  # SQL and may create tables that need their own RLS statements.
+  TABLES=$(grep -rhioE 'create table (if not exists )?[a-z_]+' "$MIG_DIR"/*.sql | sed -E 's/create table (if not exists )?//I' | sort -u)
+  RLS_TABLES=$(grep -rhioE 'alter table [a-z_.]+ +enable row level security' "$MIG_DIR"/*.sql | sed -E 's/alter table //I; s/ +enable row level security//I' | sort -u)
 
   MISSING=$(comm -23 <(echo "$TABLES") <(echo "$RLS_TABLES"))
 

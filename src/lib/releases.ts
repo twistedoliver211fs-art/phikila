@@ -7,7 +7,7 @@
  * the asset filenames here, or wire this up to the GitHub Releases API.
  */
 
-const REPO = "twistedoliver211fs-art/phikila";
+const REPO = "twistedoliver211fs-art/decimal";
 const DOWNLOAD_BASE = `https://github.com/${REPO}/releases/download`;
 const TAG = "v0.2.1";
 
@@ -29,7 +29,7 @@ export const RELEASE = {
   },
 } as const;
 
-export const WEB_APP_URL = "https://phikila-app.vercel.app";
+export const WEB_APP_URL = "https://decimal-app.vercel.app";
 
 export type PlatformId = "android" | "windows" | "linux" | "pwa";
 
@@ -70,8 +70,8 @@ export const PLATFORMS: PlatformDownload[] = [
     {
       id: "android-release",
       label: "APK (signed)",
-      filename: `phikila-${TAG}-android-release.apk`,
-      url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-android-release.apk`,
+      filename: `decimal-${TAG}-android-release.apk`,
+      url: `${DOWNLOAD_BASE}/${TAG}/decimal-${TAG}-android-release.apk`,
       size: "66.3 MB",
       sha256: "8c50f21b15b75633a036aad577ac38415f241167a9351ccecf9597ec03978429",
       recommended: true,
@@ -80,8 +80,8 @@ export const PLATFORMS: PlatformDownload[] = [
     {
       id: "android-debug",
       label: "Debug APK",
-      filename: `phikila-${TAG}-android-debug.apk`,
-      url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-android-debug.apk`,
+      filename: `decimal-${TAG}-android-debug.apk`,
+      url: `${DOWNLOAD_BASE}/${TAG}/decimal-${TAG}-android-debug.apk`,
       size: "84.2 MB",
       sha256: "d48485d1ac898f23ef28c78f1b69e667a1c6d2353eb60d3df6853ca53f877bba",
       note: "Debug-signed, unminified — for development and testing",
@@ -90,7 +90,7 @@ export const PLATFORMS: PlatformDownload[] = [
     installSteps: [
       "Download the APK and tap it to install.",
       "If prompted, allow installs from your browser (Settings → Install unknown apps).",
-      "Open Phikila and sign in with your Google account.",
+      "Open Decimal and sign in with your Google account.",
     ],
   },
   {
@@ -104,8 +104,8 @@ export const PLATFORMS: PlatformDownload[] = [
       {
         id: "windows-exe",
         label: "Installer (.exe)",
-        filename: `phikila-${TAG}-windows-x64.exe`,
-        url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-windows-x64.exe`,
+        filename: `decimal-${TAG}-windows-x64.exe`,
+        url: `${DOWNLOAD_BASE}/${TAG}/decimal-${TAG}-windows-x64.exe`,
         size: "28.2 MB",
         sha256: "6313884828ccde2cddf2d361a57cc3eb3dea6f023c87959f1af21b6f14921956",
         recommended: true,
@@ -113,8 +113,8 @@ export const PLATFORMS: PlatformDownload[] = [
       {
         id: "windows-msi",
         label: "MSI",
-        filename: `phikila-${TAG}-windows-x64.msi`,
-        url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-windows-x64.msi`,
+        filename: `decimal-${TAG}-windows-x64.msi`,
+        url: `${DOWNLOAD_BASE}/${TAG}/decimal-${TAG}-windows-x64.msi`,
         size: "29.8 MB",
         sha256: "045e10b0abeca001885cc6fb1d71f77c91b9e9c473b0ac50e6e90b4ae7e8abf1",
         note: "For IT-managed deployment (GPO / msiexec)",
@@ -123,7 +123,7 @@ export const PLATFORMS: PlatformDownload[] = [
     installSteps: [
       "Run the installer.",
       "SmartScreen may appear — builds are self-signed: click “More info” → “Run anyway”.",
-      "Launch Phikila from the Start menu.",
+      "Launch Decimal from the Start menu.",
     ],
   },
   {
@@ -136,27 +136,27 @@ export const PLATFORMS: PlatformDownload[] = [
       {
         id: "linux-deb",
         label: ".deb",
-        filename: `phikila-${TAG}-linux-x86_64.deb`,
-        url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-linux-x86_64.deb`,
+        filename: `decimal-${TAG}-linux-x86_64.deb`,
+        url: `${DOWNLOAD_BASE}/${TAG}/decimal-${TAG}-linux-x86_64.deb`,
         size: "29.9 MB",
         sha256: "acb17a452cc94fb701232b20560014c86981b60e7bd717389675ef4830c4a1e5",
         recommended: true,
-        note: "sudo apt install ./phikila-v0.2.1-linux-x86_64.deb",
+        note: "sudo apt install ./decimal-v0.2.1-linux-x86_64.deb",
       },
       {
         id: "linux-appimage",
         label: "AppImage",
-        filename: `phikila-${TAG}-linux-x86_64.AppImage`,
-        url: `${DOWNLOAD_BASE}/${TAG}/phikila-${TAG}-linux-x86_64.AppImage`,
+        filename: `decimal-${TAG}-linux-x86_64.AppImage`,
+        url: `${DOWNLOAD_BASE}/${TAG}/decimal-${TAG}-linux-x86_64.AppImage`,
         size: "101.2 MB",
         sha256: "f810860e3aee91aa33645f4f5941d554b4066bfa132f1c37b70cf23af471e7c0",
         note: "chmod +x && run — no installation required",
       },
     ],
     installSteps: [
-      "Install the .deb: sudo apt install ./phikila-v0.2.1-linux-x86_64.deb",
-      "Or run the AppImage: chmod +x phikila-*.AppImage && ./phikila-*.AppImage",
-      "Launch Phikila from your applications menu.",
+      "Install the .deb: sudo apt install ./decimal-v0.2.1-linux-x86_64.deb",
+      "Or run the AppImage: chmod +x decimal-*.AppImage && ./decimal-*.AppImage",
+      "Launch Decimal from your applications menu.",
     ],
   },
   {
@@ -167,9 +167,9 @@ export const PLATFORMS: PlatformDownload[] = [
     requirements: "Any modern browser · works offline via service worker",
     assets: [],
     installSteps: [
-      "Open phikila-app.vercel.app in your browser.",
+      "Open decimal-app.vercel.app in your browser.",
       "Install via the address-bar install icon (Chrome/Edge) or “Add to Home Screen” (Safari).",
-      "Phikila keeps working offline and syncs when you reconnect.",
+      "Decimal keeps working offline and syncs when you reconnect.",
     ],
     hint: "Works on macOS and iOS too — no native build needed.",
   },
@@ -210,7 +210,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "0.1.0",
     date: "September 2026",
     items: [
-      "Initial release of the Phikila multi-school management platform",
+      "Initial release of the Decimal multi-school management platform",
       "Role-based portals: Super Admin, Principal, Teacher, Finance, Admissions, Secretary, Parent",
       "Timetable builder with conflict detection and print views",
       "Attendance, exams and fee management with offline support",

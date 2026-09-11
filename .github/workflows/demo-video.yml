@@ -12,8 +12,8 @@ on:
   workflow_dispatch:
 
 env:
-  SITE_URL: https://phikila-app.vercel.app
-  R2_BUCKET: phikila-demo
+  SITE_URL: https://decimal-app.vercel.app
+  R2_BUCKET: decimal-demo
   R2_PUBLIC_URL: https://pub-4cad27e8f2764072a35726cc9af64723.r2.dev
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
       SUPABASE_URL: https://pgiytpbrnyxnnfupvaiv.supabase.co
       SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnaXl0cGJybnl4bm5mdXB2YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzOTA2MzUsImV4cCI6MjEwMzk2NjYzNX0.f_-FVAYXS3pZuGIJGAcqPuRvrV95QVQXslCcHyGu85o
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      DEMO_EMAIL: demo@phikila.app
+      DEMO_EMAIL: demo@decimal.app
       DEMO_PASSWORD: Demo1234!
     
     steps:
@@ -64,21 +64,21 @@ jobs:
           
           echo "Clearing demo data..."
           psql "$DB_URL" <<-'SQL' || true
-            DELETE FROM attendance_records WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM payments WHERE student_account_id IN (SELECT sa.id FROM student_accounts sa JOIN schools s ON sa.school_id = s.id WHERE s.slug = 'phikila-demo');
-            DELETE FROM student_accounts WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM students WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM staff WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM class_teachers WHERE class_id IN (SELECT c.id FROM classes c JOIN schools s ON c.school_id = s.id WHERE s.slug = 'phikila-demo');
-            DELETE FROM subjects WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM classes WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM grades WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM fee_structures WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM terms WHERE academic_year_id IN (SELECT id FROM academic_years WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo'));
-            DELETE FROM academic_years WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM school_members WHERE school_id IN (SELECT id FROM schools WHERE slug = 'phikila-demo');
-            DELETE FROM profiles WHERE id IN (SELECT user_id FROM auth.users WHERE email = 'demo@phikila.app');
-            DELETE FROM schools WHERE slug = 'phikila-demo';
+            DELETE FROM attendance_records WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM payments WHERE student_account_id IN (SELECT sa.id FROM student_accounts sa JOIN schools s ON sa.school_id = s.id WHERE s.slug = 'decimal-demo');
+            DELETE FROM student_accounts WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM students WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM staff WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM class_teachers WHERE class_id IN (SELECT c.id FROM classes c JOIN schools s ON c.school_id = s.id WHERE s.slug = 'decimal-demo');
+            DELETE FROM subjects WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM classes WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM grades WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM fee_structures WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM terms WHERE academic_year_id IN (SELECT id FROM academic_years WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo'));
+            DELETE FROM academic_years WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM school_members WHERE school_id IN (SELECT id FROM schools WHERE slug = 'decimal-demo');
+            DELETE FROM profiles WHERE id IN (SELECT user_id FROM auth.users WHERE email = 'demo@decimal.app');
+            DELETE FROM schools WHERE slug = 'decimal-demo';
           SQL
           
           echo "Seeding fresh data..."
@@ -98,7 +98,7 @@ jobs:
           d=json.load(sys.stdin)
           users = d.get('users',[])
           for u in users:
-              if u.get('email') == 'demo@phikila.app':
+              if u.get('email') == 'demo@decimal.app':
                   print(u['id'])
                   break
           else:
@@ -134,9 +134,9 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: $SUPABASE_URL
           NEXT_PUBLIC_SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
-          NEXT_PUBLIC_SITE_URL: https://phikila-app.vercel.app
+          NEXT_PUBLIC_SITE_URL: https://decimal-app.vercel.app
         run: |
-          npm run build
+          npm run build -- --webpack
           # Kill any stale process on port 3000 before starting
           lsof -ti:3000 | xargs kill -9 2>/dev/null || true
           PORT=3000 npm run start > /tmp/server.log 2>&1 &
@@ -174,7 +174,13 @@ jobs:
       - name: Verify recording output
         run: |
           ls -la scripts/demo/output/ || true
-          test -f scripts/demo/output/demo.raw.mkv -a -s scripts/demo/output/demo.raw.mkv || { echo "Playwright recording missing or empty"; ls -la scripts/demo/output/; exit 1; }
+          RECORDED=$(ls scripts/demo/output/*.webm 2>/dev/null | head -1)
+          if [ -z "$RECORDED" ] || [ ! -s "$RECORDED" ]; then
+            echo "Playwright recording missing or empty"
+            ls -la scripts/demo/output/
+            exit 1
+          fi
+          echo "Found recording: $RECORDED"
 
       - name: Generate TTS narration
         run: |
@@ -182,7 +188,13 @@ jobs:
           python3 generate-tts.py
       - name: Verify TTS audio
         run: |
-          test -f scripts/demo/output/demo.mp3 -a -s scripts/demo/output/demo.mp3 || { echo "TTS audio missing or empty"; ls -la scripts/demo/output/; exit 1; }
+          AUDIO_COUNT=$(ls scripts/demo/output/audio/*.mp3 2>/dev/null | wc -l)
+          if [ "$AUDIO_COUNT" -eq 0 ]; then
+            echo "TTS audio missing or empty"
+            ls -la scripts/demo/output/audio/ 2>/dev/null || echo "No audio directory"
+            exit 1
+          fi
+          echo "Found $AUDIO_COUNT audio files"
 
       - name: Render video with FFmpeg
         run: |
@@ -190,7 +202,7 @@ jobs:
           bash render.sh
       - name: Verify final video
         run: |
-          test -f scripts/demo/output/phikila-demo.mp4 -a -s scripts/demo/output/phikila-demo.mp4 || { echo "Final video missing or empty"; ls -la scripts/demo/output/; exit 1; }
+          test -f scripts/demo/output/decimal-demo.mp4 -a -s scripts/demo/output/decimal-demo.mp4 || { echo "Final video missing or empty"; ls -la scripts/demo/output/; exit 1; }
           test -f scripts/demo/output/thumbnail.jpg -a -s scripts/demo/output/thumbnail.jpg || { echo "Thumbnail missing"; exit 1; }
 
       - name: Upload to Cloudflare R2
@@ -201,12 +213,12 @@ jobs:
           cd scripts/demo
           
           DATE=$(date +%Y%m%d)
-          R2_KEY="demo/phikila-demo-${DATE}.mp4"
+          R2_KEY="demo/decimal-demo-${DATE}.mp4"
           R2_THUMB="demo/thumbnail-${DATE}.jpg"
           
           echo "Uploading video..."
           npx wrangler r2 object put "${R2_BUCKET}/${R2_KEY}" \
-            --file output/phikila-demo.mp4 \
+            --file output/decimal-demo.mp4 \
             --content-type "video/mp4" \
             --remote
           
@@ -234,14 +246,14 @@ jobs:
             echo "Updating landing page with video URL: $VIDEO_URL"
             UPDATED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
             VERSION=$(date +%Y%m%d%H%M)
-            cat > public/demo-config.json <<OUTER
+            cat > public/demo-config.json <<EOF
           {
             "videoUrl": "${VIDEO_URL}",
             "thumbnailUrl": "${THUMB_URL}",
             "updatedAt": "${UPDATED}",
             "version": "${VERSION}"
           }
-          OUTER
+          EOF
             
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -271,7 +283,7 @@ jobs:
         with:
           name: demo-video
           path: |
-            scripts/demo/output/phikila-demo.mp4
+            scripts/demo/output/decimal-demo.mp4
             scripts/demo/output/thumbnail.jpg
             scripts/demo/output/captions.srt
             scripts/demo/output/r2-urls.json

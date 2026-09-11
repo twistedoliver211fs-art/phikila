@@ -7,13 +7,14 @@ import {
   X,
   TrendingUp,
   Award,
-  Users,
   Percent,
+  PenLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import {
   LineChart,
   Line,
@@ -523,6 +524,9 @@ export default function PrincipalExamsPage() {
                     <th className="pb-3 text-left font-medium text-muted-foreground">
                       Students
                     </th>
+                    <th className="pb-3 text-left font-medium text-muted-foreground">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -563,6 +567,14 @@ export default function PrincipalExamsPage() {
                         </td>
                         <td className="py-3 text-muted-foreground">
                           {new Set(results.map((r) => r.student_id)).size || "—"}
+                        </td>
+                        <td className="py-3">
+                          <Link href={`/principal/exams/${exam.id}/scores`}>
+                            <Button variant="ghost" size="sm">
+                              <PenLine className="h-3.5 w-3.5 mr-1" />
+                              Scores
+                            </Button>
+                          </Link>
                         </td>
                       </tr>
                     );

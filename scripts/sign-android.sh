@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-KEYSTORE_DIR="$HOME/.phikila-keystore"
-KEYSTORE="$KEYSTORE_DIR/phikila-release.jks"
-KEY_ALIAS="phikila"
-KEYSTORE_PASS="Phikila2026!"
+KEYSTORE_DIR="$HOME/.decimal-keystore"
+KEYSTORE="$KEYSTORE_DIR/decimal-release.jks"
+KEY_ALIAS="decimal"
+KEYSTORE_PASS="Decimal2026!"
 
 if [ ! -f "$KEYSTORE" ]; then
   echo "==> Generating self-signed keystore..."

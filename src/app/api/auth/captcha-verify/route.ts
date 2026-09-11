@@ -17,7 +17,7 @@ import { rateLimit } from "@/lib/rate-limit";
 // (public, safe to ship in the browser bundle).
 
 export async function POST(request: Request) {
-  const rl = rateLimit(request, { maxRequests: 20, windowMs: 60_000, prefix: "captcha-verify" });
+  const rl = await rateLimit(request, { maxRequests: 20, windowMs: 60_000, prefix: "captcha-verify" });
   if (!rl.allowed) {
     return NextResponse.json(
       { ok: false, error: "Too many requests. Please try again later." },
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => null);
   const token = body?.token;
-  const siteUrl = body?.siteUrl ?? "https://phikila-app.vercel.app";
+  const siteUrl = body?.siteUrl ?? "https://decimal-app.vercel.app";
 
   if (!token || typeof token !== "string") {
     return NextResponse.json(
@@ -38,10 +38,9 @@ export async function POST(request: Request) {
 
   const secret = process.env.SUPABASE_CAPTCHA_SECRET;
   if (!secret) {
-    console.error("[captcha-verify] SUPABASE_CAPTCHA_SECRET is not set.");
     return NextResponse.json(
-      { ok: false, error: "Captcha verification is not configured." },
-      { status: 500 }
+      { ok: false, error: "Captcha service unavailable." },
+      { status: 400 }
     );
   }
 

@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/server-admin";
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
-  const rl = rateLimit(request, { maxRequests: 5, windowMs: 60_000, prefix: "register-school" });
+  const rl = await rateLimit(request, { maxRequests: 10, windowMs: 60_000, prefix: "register-school" });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -29,15 +28,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "School name is required" }, { status: 400 });
   }
 
-  // Generate slug from school name
   const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
+  const { createAdminClient } = await import("@/lib/supabase/server-admin");
   const admin = createAdminClient();
 
-  // Check if slug is unique
   const { data: existing } = await admin
     .from("schools")
     .select("id")
@@ -49,7 +47,6 @@ export async function POST(request: Request) {
     finalSlug = `${slug}-${Date.now().toString(36)}`;
   }
 
-  // Create the school
   const { data: school, error: schoolError } = await admin
     .from("schools")
     .insert({
@@ -71,7 +68,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create school" }, { status: 500 });
   }
 
-  // Add the user as principal
   const { error: memberError } = await admin
     .from("school_members")
     .insert({
@@ -83,7 +79,6 @@ export async function POST(request: Request) {
 
   if (memberError) {
     console.error("[register-school] Member creation failed:", memberError);
-    // Rollback: delete the school
     await admin.from("schools").delete().eq("id", school.id);
     return NextResponse.json({ error: "Failed to assign role" }, { status: 500 });
   }

@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 import { SyncIndicator } from "@/components/platform/sync-indicator";
+import { SyncConflictBadge } from "@/components/platform/sync-conflicts";
 import { SearchModal } from "@/components/platform/search-modal";
 import { ThemeToggle } from "@/components/platform/theme-toggle";
+import { SchoolSwitcher } from "@/components/platform/school-switcher";
 
 interface Notification {
   id: string;
@@ -122,8 +124,11 @@ export function Header({ onMenuClick, roleLabel, userName }: HeaderProps) {
         </button>
       </div>
 
+      <SchoolSwitcher />
+
       <div className="flex items-center gap-2">
         <SyncIndicator />
+        <SyncConflictBadge />
         <ThemeToggle />
 
         <DropdownMenu>

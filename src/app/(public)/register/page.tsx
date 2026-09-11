@@ -14,13 +14,13 @@ export default function RegisterPage() {
       <div className="w-full max-w-md text-center">
         <div className="mb-8 flex justify-center">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.jpeg" alt="Phikila" width={40} height={40} className="rounded-lg" />
-            <span className="text-xl font-bold tracking-tight text-white">Phikila</span>
+            <Image src="/logo.jpeg" alt="Decimal" width={40} height={40} className="rounded-lg" />
+            <span className="text-xl font-bold tracking-tight text-white">Decimal</span>
           </Link>
         </div>
 
         <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-xl p-8 shadow-2xl">
-          <h1 className="text-2xl font-bold text-white">Get Started with Phikila</h1>
+          <h1 className="text-2xl font-bold text-white">Get Started with Decimal</h1>
           <p className="mt-2 text-sm text-white/70">
             Choose how you&apos;d like to proceed.
           </p>

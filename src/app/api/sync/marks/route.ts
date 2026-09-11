@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { syncMarkRecords } from "@/lib/services/sync";
 
 export async function POST(request: Request) {
-  const rl = rateLimit(request, { maxRequests: 30, windowMs: 60_000, prefix: "sync-marks" });
+  const rl = await rateLimit(request, { maxRequests: 30, windowMs: 60_000, prefix: "sync-marks" });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -19,18 +20,26 @@ export async function POST(request: Request) {
   const { records } = body;
   if (!Array.isArray(records)) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 
-  const { error } = await supabase.from("exam_results").upsert(
-    records.map((r: Record<string, unknown>) => ({
-      id: r.id,
-      exam_id: r.exam_id,
-      student_id: r.student_id,
-      subject_id: r.subject_id,
-      score: r.score,
-      recorded_by: r.recorded_by,
-    })),
-    { onConflict: "id" }
-  );
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("active_school_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  const schoolId = profile?.active_school_id;
+  if (!schoolId) return NextResponse.json({ error: "No active school" }, { status: 403 });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, synced: records.length });
+  try {
+    const result = await syncMarkRecords(supabase, schoolId, user.id, records);
+    return NextResponse.json({
+      ok: true,
+      synced: result.synced,
+      skipped: result.skipped,
+      conflicts: result.conflicts,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Sync failed" },
+      { status: 500 }
+    );
+  }
 }

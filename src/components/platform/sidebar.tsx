@@ -27,6 +27,11 @@ import {
   X,
   ClipboardList,
   BookMarked,
+  Bell,
+  Upload,
+  Key,
+  Webhook,
+  Flag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -42,17 +47,23 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "Schools", href: "/super-admin/schools", icon: School },
     { label: "Users", href: "/super-admin/users", icon: Users },
     { label: "Audit Log", href: "/super-admin/audit", icon: FileText },
+    { label: "Platform Settings", href: "/super-admin/settings", icon: Settings },
+    { label: "Feature Flags", href: "/super-admin/feature-flags", icon: Flag },
   ],
   principal: [
     { label: "Dashboard", href: "/principal", icon: LayoutDashboard },
     { label: "Students", href: "/principal/students", icon: GraduationCap },
     { label: "Staff", href: "/principal/staff", icon: Users },
     { label: "Attendance", href: "/principal/attendance", icon: ClipboardCheck },
+    { label: "Staff Attendance", href: "/principal/staff-attendance", icon: ClipboardCheck },
     { label: "Fees & Finance", href: "/principal/fees", icon: DollarSign },
+    { label: "Invoices", href: "/principal/invoices", icon: FileText },
+    { label: "Payments", href: "/principal/payments", icon: CreditCard },
     { label: "Academics", href: "/principal/academics", icon: BookOpen },
     { label: "All Exams", href: "/principal/exams", icon: BarChart3 },
     { label: "Grading System", href: "/principal/exams/grading", icon: Settings },
     { label: "Performance Analysis", href: "/principal/exams/analysis", icon: BarChart3 },
+    { label: "Report Cards", href: "/principal/report-cards", icon: FileText },
     { label: "Timetable Builder", href: "/principal/timetable", icon: Calendar },
     { label: "Teacher Assignments", href: "/principal/teacher-assignments", icon: UserCheck },
     { label: "Subject Frequencies", href: "/principal/subject-frequencies", icon: BookMarked },
@@ -60,7 +71,15 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "Who's Where", href: "/principal/timetable/who-is-where", icon: Activity },
     { label: "Timetable Settings", href: "/principal/timetable/settings", icon: Settings },
     { label: "Admissions", href: "/principal/admissions", icon: UserCheck },
-    { label: "Communication", href: "/principal", icon: MessageSquare, disabled: true },
+    { label: "Billing", href: "/principal/billing", icon: CreditCard },
+    { label: "Analytics", href: "/principal/analytics", icon: BarChart3 },
+    { label: "Import Data", href: "/principal/import", icon: Upload },
+    { label: "Documents", href: "/principal/documents", icon: FileText },
+    { label: "API Keys", href: "/principal/api-keys", icon: Key },
+    { label: "Webhooks", href: "/principal/webhooks", icon: Webhook },
+    { label: "Messages", href: "/principal/messages", icon: MessageSquare },
+    { label: "Announcements", href: "/principal/announcements", icon: Megaphone },
+    { label: "Notifications", href: "/principal/notifications", icon: Bell },
     { label: "Reports", href: "/principal", icon: FileText, disabled: true },
   ],
   teacher: [
@@ -70,7 +89,7 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "Attendance", href: "/teacher/attendance", icon: ClipboardCheck },
     { label: "Exams & Results", href: "/teacher/exams", icon: BarChart3 },
     { label: "Academics", href: "/teacher", icon: BookOpen, disabled: true },
-    { label: "Communication", href: "/teacher", icon: MessageSquare, disabled: true },
+    { label: "Communication", href: "/teacher/communication", icon: MessageSquare },
     { label: "Profile", href: "/teacher", icon: Settings, disabled: true },
   ],
   timetable_manager: [
@@ -93,9 +112,9 @@ const navConfig: Record<string, { label: string; href: string; icon: React.Compo
     { label: "Children", href: "/parent", icon: Baby },
     { label: "Attendance", href: "/parent/attendance", icon: ClipboardCheck },
     { label: "Fees", href: "/parent/fees", icon: DollarSign },
-    { label: "Academics", href: "/parent", icon: BookOpen, disabled: true },
-    { label: "Timetable", href: "/parent", icon: Calendar, disabled: true },
-    { label: "Communication", href: "/parent", icon: Mail, disabled: true },
+    { label: "Timetable", href: "/parent/timetable", icon: Calendar },
+    { label: "Announcements", href: "/parent/announcements", icon: Megaphone },
+    { label: "Messages", href: "/parent/messages", icon: Mail },
   ],
   admissions_officer: [
     { label: "Dashboard", href: "/admissions-officer", icon: LayoutDashboard },
@@ -145,12 +164,12 @@ export function Sidebar({ role, open, onClose }: SidebarProps) {
         <div className="flex h-16 items-center gap-2 border-b border-border px-4">
           <Image
             src="/logo.jpeg"
-            alt="Phikila"
+            alt="Decimal"
             width={28}
             height={28}
             className="rounded-md"
           />
-          <span className="text-base font-bold tracking-tight">Phikila</span>
+          <span className="text-base font-bold tracking-tight">Decimal</span>
           <Button
             variant="ghost"
             size="icon"

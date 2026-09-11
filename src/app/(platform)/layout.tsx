@@ -1,17 +1,8 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PlatformShell } from "@/components/platform/shell";
-
-const roleLabels: Record<string, string> = {
-  super_admin: "Super Admin",
-  principal: "Principal",
-  teacher: "Teacher",
-  timetable_manager: "Timetable Manager",
-  finance: "Finance",
-  admissions_officer: "Admissions Officer",
-  secretary: "Secretary",
-  parent: "Parent",
-};
+import { resolvePortalRole, ROLE_LABELS } from "@/lib/auth-config";
 
 export default async function PlatformLayout({
   children,
@@ -32,14 +23,58 @@ export default async function PlatformLayout({
     .from("school_members")
     .select("role, school_id")
     .eq("user_id", user.id)
-    .eq("is_active", true)
-    .limit(1);
+    .eq("is_active", true);
 
-  const role = members?.[0]?.role ?? "teacher";
-  const roleLabel = roleLabels[role] ?? "User";
+  const cookieStore = await cookies();
+  const cookieRole = cookieStore.get("decimal_active_role")?.value ?? null;
+
+  let role = members?.[0]?.role ?? "teacher";
+  let activeSchoolId: string | null = null;
+
+  // Multi-school users: show the shell for the role in their active school.
+  if ((members?.length ?? 0) > 1) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("active_school_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    activeSchoolId = profile?.active_school_id ?? null;
+    role =
+      resolvePortalRole(members ?? [], activeSchoolId, cookieRole) ?? role;
+  } else if (members && members.length === 1) {
+    activeSchoolId = members[0].school_id;
+  }
+
+  // Super admin operating inside a school as principal ("Enter School" flow).
+  const isSuperAdmin = (members ?? []).some((m) => m.role === "super_admin");
+  const schoolMode =
+    isSuperAdmin && Boolean(cookieStore.get("decimal_school_mode")?.value);
+
+  let shellRole = role;
+  let roleLabel = ROLE_LABELS[role] ?? "User";
+  let schoolContext: { schoolName: string } | null = null;
+
+  if (schoolMode) {
+    shellRole = "principal";
+    roleLabel = "Principal View";
+
+    const { data: school } = await supabase
+      .from("schools")
+      .select("name")
+      .eq("id", activeSchoolId ?? "")
+      .maybeSingle();
+
+    schoolContext = { schoolName: school?.name ?? "School" };
+  }
 
   return (
-    <PlatformShell role={role} roleLabel={roleLabel} userName={user.email ?? ""}>
+    <PlatformShell
+      role={shellRole}
+      roleLabel={roleLabel}
+      userName={user.email ?? ""}
+      schoolContext={schoolContext}
+    >
       {children}
     </PlatformShell>
   );

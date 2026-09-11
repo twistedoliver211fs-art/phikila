@@ -6,7 +6,7 @@ import { rateLimit } from "@/lib/rate-limit";
 const API_VERSION = "1.0";
 
 export async function POST(request: Request) {
-  const rl = rateLimit(request, { maxRequests: 5, windowMs: 60_000, prefix: "v1-register-school" });
+  const rl = await rateLimit(request, { maxRequests: 5, windowMs: 60_000, prefix: "v1-register-school" });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
