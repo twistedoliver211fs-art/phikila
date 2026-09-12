@@ -1,0 +1,5 @@
+{
+  "project": "decimal-mobile",
+  "functions": "./convex/functions",
+  "schema": "./convex/schema.ts"
+}
